@@ -95,7 +95,7 @@ int main(void)
     
     if (get_key_press(1<<BTN_ENTER))
     {
-      BOX_spawn();
+      BOX_rotate(1);
     }
 
   /*  

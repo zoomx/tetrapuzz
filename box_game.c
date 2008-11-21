@@ -128,7 +128,13 @@ void BOX_load_reference(unsigned char piece, unsigned char rotation)
 
 void BOX_rotate(unsigned char direction)
 {
-
+  //TODO: Check if we are going to hit something when we rotate
+  BOX_clear_loc();
+  BOX_clear_piece();
+  if (++rotate > 3) rotate = 0;
+  BOX_load_reference(cur_piece, rotate);
+  BOX_write_piece();
+  BOX_store_loc();
 }
 
 void BOX_draw(unsigned char X, unsigned char Y)
