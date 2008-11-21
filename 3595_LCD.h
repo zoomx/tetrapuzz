@@ -15,6 +15,7 @@
 #define F_CPU 8000000UL
 
 #include <avr/io.h>
+#include <avr/pgmspace.h>
 #include <util/delay.h>
 
 #define LCD_PORT PORTC

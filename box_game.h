@@ -1,3 +1,5 @@
+#include <avr/pgmspace.h>
+
 //Prototypes
 void BOX_store_loc(void);
 void BOX_clear_loc(void);

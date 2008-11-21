@@ -24,6 +24,18 @@ unsigned char BOX_location[] = {
   0b00000000
 };
 
+/*****************************************
+* BOX_piece[] is a 4x4 represntation of  *
+* the currently selected playing piece.  *
+* When a piece spawns its shape is       *
+* written to this array in four nibbles, *
+* BIT0,LSN; Bit0,MSN; BIT1,LSN; BIT1,MSN *
+* The LSB of each nibble is the top of   *
+* the display area.                      *
+*****************************************/
+
+unsigned char BOX_piece[] = { 0b00000000, 0b00000000 }
+
 //Variables
 unsigned char x_loc, y_loc;
 
