@@ -19,7 +19,7 @@ Program flow:
 * for a 12x8 playing area                  *
 *******************************************/
 
-unsigned char BOX_location[] = {
+unsigned char BOX_location[12] = {
   0b00000000,
   0b00000000,
   0b00000000,
@@ -63,15 +63,31 @@ static const char PROGMEM BOX_reference[] = {
     0b11000100, 0b00001000,
     0b01101100, 0b00000000,
     0b11000100, 0b00001000,
-    0b01101100, 0b00000000
+    0b01101100, 0b00000000,
 
   // |_ (L)
+    0b01001100, 0b00000100,
+    0b00100000, 0b00001110,
+    0b10001000, 0b00001100,
+    0b11100000, 0b00001000,
 
   // _| (backward L)
+    0b01000100, 0b00001100,
+    0b10000000, 0b00001110,
+    0b10001100, 0b00001000,
+    0b11100000, 0b00000010,
 
   // |=| (box)
+    0b11001100, 0b00000000,
+    0b11001100, 0b00000000,
+    0b11001100, 0b00000000,
+    0b11001100, 0b00000000,
 
   // ---- (line)  
+    0b01000100, 0b01000100,
+    0b11110000, 0b00000000,
+    0b01000100, 0b01000100
+    0b11110000, 0b00000000,
 };
 
 //Variables
@@ -129,6 +145,7 @@ void BOX_load_reference(unsigned char piece, unsigned char rotation)
 void BOX_rotate(unsigned char direction)
 {
   //TODO: Check if we are going to hit something when we rotate
+  //TODO: Check if we will go off the screen when we rotate
   BOX_clear_loc();
   BOX_clear_piece();
   if (++rotate > 3) rotate = 0;
@@ -164,7 +181,6 @@ void BOX_write_piece(void)  //Writes piece to display
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
-    if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
     //prevent invalid indicies from being written
@@ -183,7 +199,6 @@ void BOX_clear_piece(void)  //Clears piece from display
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
-    if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
     //prevent invalid indicies from being written
@@ -202,7 +217,7 @@ void BOX_spawn(void)
 {
   x_loc = 4;
   y_loc = 0;
-
+  rotate = 0;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
   
@@ -218,18 +233,20 @@ void BOX_spawn(void)
 
 void BOX_up(void)
 {
-  //if (y_loc == 0) return; //Do nothing if we're at the top already
-  //if (BOX_location[x_loc] & 1<<(y_loc-1)) return; //Do nothing if there is a box above us
   BOX_clear_loc();
   BOX_clear_piece();
-  --y_loc;
-  BOX_write_piece();
-  BOX_store_loc();
+
+  if (++cur_piece > 6) cur_piece = 0;
+  x_loc = 4;
+  y_loc = 0;
+
+  BOX_spawn();
 }
 
 void BOX_dn(void)
 {
-  //if (y_loc == 7) return; //Do nothing if we're at the bottom already
+  if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) ||
+	((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x44))) return; //Do nothing if we're at the bottom already
   //if (BOX_location[x_loc] & 1<<(y_loc+1)) return; //Do nothing if there is a box below us
   BOX_clear_loc();
   BOX_clear_piece();
@@ -240,18 +257,20 @@ void BOX_dn(void)
 
 void BOX_lt(void)
 {
-  //if (x_loc == 0) return; //Do nothing if we're at the left edge already
+  if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
   //if (BOX_location[x_loc-1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
-  --x_loc;
+  x_loc--;
   BOX_write_piece();
   BOX_store_loc();
 }
 
 void BOX_rt(void)
 {
-  //if (x_loc == 11) return; //Do nothing if we're at the left edge already
+  if (((x_loc+3 == BOX_board_right) && (BOX_piece[1] & 0xF0)) ||
+      ((x_loc+2 == BOX_board_right) && (BOX_piece[1] & 0x0F)) || 
+      (x_loc+1 == BOX_board_right)) return; //Do nothing if we're at the right edge already
   //if (BOX_location[x_loc+1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
