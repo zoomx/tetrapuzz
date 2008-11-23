@@ -263,10 +263,10 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
   {
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
-      if ((x_loc+X_offset-i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      if ((x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
       else if ((x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
       else if ((y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
-      else if (y_loc+Y_offset+j > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      else if (y_loc+Y_offset-j > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
       else if (BOX_location[x_loc+X_offset+i] & 1<<(y_loc+Y_offset-j)) temp_area[i/2] |= 1<<((4*(i%2))+(3-j));
       else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
     }
