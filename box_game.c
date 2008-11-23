@@ -86,7 +86,7 @@ static const char PROGMEM BOX_reference[] = {
   // ---- (line)  
     0b01000100, 0b01000100,
     0b11110000, 0b00000000,
-    0b01000100, 0b01000100
+    0b01000100, 0b01000100,
     0b11110000, 0b00000000,
 };
 
@@ -231,6 +231,55 @@ void BOX_spawn(void)
   BOX_write_piece(); //draw piece
 }
 
+unsigned char BOX_check(signed char X_offset, signed char Y_offset)
+{
+  //Check to see if we overlap a piece or the side of the board
+  //Return 1 = there IS an overlap
+  //Return 0 = NO Overlap
+
+
+  //Check left
+  if (X_offset < 0)
+  {
+    if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc > BOX_board_right)) return 1;
+  }
+  //Check right
+  if (X_offset > 0)
+  {
+    if ((x_loc+X_offset+3 > BOX_board_right) && (BOX_piece[1] & 0xF0)) return 1;
+    if ((x_loc+X_offset+2 > BOX_board_right) && (BOX_piece[1] & 0x0F)) return 1;
+    if (x_loc+X_offset+1 > BOX_board_right) return 1;
+  }
+  //Check bottom
+  if (Y_offset > 0)
+  {
+    if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) || ((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] |BOX_piece[1]) & 0x44))) return 1; //Do nothing if we're at the bottom already
+  }
+
+  //Get 4x4 grid area on playing board
+  BOX_clear_loc();	//Clear the current location so we don't get a false reading from it
+  unsigned char temp_area[2];
+  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
+  {
+    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
+    {
+      if ((x_loc+X_offset-i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      else if ((x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      else if ((y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      else if (y_loc+Y_offset+j > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      else if (BOX_location[x_loc+X_offset+i] & 1<<(y_loc+Y_offset-j)) temp_area[i/2] |= 1<<((4*(i%2))+(3-j));
+      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+    }
+  }
+  BOX_store_loc();	//Store the current location that we cleared earlier
+
+  //Compare two arrays for overlaps
+  if ((BOX_piece[0] & temp_area[0]) || (BOX_piece[1] & temp_area[1])) return 1;
+
+
+  return 0;
+}
+
 void BOX_up(void)
 {
   BOX_clear_loc();
@@ -245,8 +294,9 @@ void BOX_up(void)
 
 void BOX_dn(void)
 {
-  if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) ||
-	((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x44))) return; //Do nothing if we're at the bottom already
+  if (BOX_check(0, 1)) return; //Do nothing if moving causes an overlap
+  //if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) ||
+  //	((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x44))) return; //Do nothing if we're at the bottom already
   //if (BOX_location[x_loc] & 1<<(y_loc+1)) return; //Do nothing if there is a box below us
   BOX_clear_loc();
   BOX_clear_piece();
@@ -257,7 +307,8 @@ void BOX_dn(void)
 
 void BOX_lt(void)
 {
-  if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
+  if (BOX_check(-1, 0)) return; //Do nothing if moving causes an overlap
+  //if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
   //if (BOX_location[x_loc-1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
@@ -268,9 +319,10 @@ void BOX_lt(void)
 
 void BOX_rt(void)
 {
-  if (((x_loc+3 == BOX_board_right) && (BOX_piece[1] & 0xF0)) ||
-      ((x_loc+2 == BOX_board_right) && (BOX_piece[1] & 0x0F)) || 
-      (x_loc+1 == BOX_board_right)) return; //Do nothing if we're at the right edge already
+  if (BOX_check(1, 0)) return; //Do nothing if moving causes an overlap
+  //if (((x_loc+3 == BOX_board_right) && (BOX_piece[1] & 0xF0)) ||
+  //    ((x_loc+2 == BOX_board_right) && (BOX_piece[1] & 0x0F)) || 
+  //    (x_loc+1 == BOX_board_right)) return; //Do nothing if we're at the right edge already
   //if (BOX_location[x_loc+1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();

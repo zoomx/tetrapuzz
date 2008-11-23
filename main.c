@@ -70,6 +70,19 @@ int main(void)
   LCD_init();
 
   LCD_Fill_Screen(white);
+
+// Testing
+  x_loc = 4;
+  y_loc = 7;
+  rotate = 0;
+
+  BOX_load_reference(cur_piece, rotate);  //load from reference
+  BOX_store_loc(); //Store new location
+  BOX_write_piece(); //draw piece
+
+
+//end testing
+
   BOX_spawn();
 
   while(1)

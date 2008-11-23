@@ -15,6 +15,7 @@ void BOX_erase(unsigned char X, unsigned char Y);
 void BOX_write_piece(void);
 void BOX_clear_piece(void);
 void BOX_spawn(void);
+unsigned char BOX_check(signed char X_offset, signed char Y_offset);
 void BOX_up(void);
 void BOX_dn(void);
 void BOX_lt(void);
