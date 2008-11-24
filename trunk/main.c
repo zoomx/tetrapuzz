@@ -17,9 +17,9 @@
 
 /**Device Information**
 * ATmega168           *
-* lfuse=          *
-* hfuse=          *
-* efuse=          *
+* lfuse=0xE2          *
+* hfuse=0xDF          *
+* efuse=0x01          *
 * Power=3.3v          *
 **********************/
 
@@ -27,6 +27,9 @@
 unsigned char debounce_cnt = 0;
 volatile unsigned char key_press;
 unsigned char key_state;
+
+//Game timer
+volatile unsigned char drop_timer_flag = 0;
 
 /***************************
 * Initialization Functions *
@@ -41,9 +44,18 @@ void init_io(void)
 
 void init_timers(void)
 {
- //Timer0 for buttons
-  TCCR0B |= 1<<CS02 | 1<<CS00;                //divide by 1024
-  TIMSK0 |= 1<<TOIE0;                       //enable timer interrupt
+  cli();
+  //Timer0 for buttons
+  TCCR0B |= 1<<CS02 | 1<<CS00;		//Divide by 1024
+  TIMSK0 |= 1<<TOIE0;			//enable timer overflow interrupt
+
+  //Timer1 for game timer
+/*
+  TCCR1B |= 1<<CS12 | 1<<CS10;		//Divide by 1024
+  TIMSK1 |= 1<<TOIE1;			//enable timer overflow interupt
+  TCNT1 = (unsigned int)(signed short)-(F_CPU / 1024);  //Preload the timer for 1 second
+*/
+  sei();
 }
 
 /*********************
@@ -70,19 +82,6 @@ int main(void)
   LCD_init();
 
   LCD_Fill_Screen(white);
-
-// Testing
-  x_loc = 4;
-  y_loc = 7;
-  rotate = 0;
-
-  BOX_load_reference(cur_piece, rotate);  //load from reference
-  BOX_store_loc(); //Store new location
-  BOX_write_piece(); //draw piece
-
-
-//end testing
-
   BOX_spawn();
 
   while(1)
@@ -110,40 +109,11 @@ int main(void)
     {
       BOX_rotate(1);
     }
-
-  /*  
-    if (get_key_press(1<<BTN_UP)) {
-      LCD_XorScreen();	//Fill screen with an XOR pattern, pause for 2 seconds 
+    if (drop_timer_flag)
+    {
+      drop_timer_flag = 0;
+      BOX_dn();
     }
-
-    if (get_key_press(1<<BTN_DN)) {
-      LCD_StripedScreen();	//Fill Screen with colored stripes, pause for 2 seconds
-    }
-
-    if (get_key_press(1<<BTN_LT)) { 
-      LCD_Hello_World();	//Write "Hello World", pause for 10 seconds
-    }
-    
-    if (get_key_press(1<<BTN_RT)) { 
-      cursor_x = 8;
-      cursor_y = 12;
-      LCD_Write_String("Hello World", 0x00, 0xFF);
-    }
-    
-    if (get_key_press(1<<BTN_ENTER)) { 
-      LCD_Fill_Screen(white);  
-      cursor_x = 0;
-      cursor_y = 12;
-      for (char ascii_letter=32; ascii_letter<128; ascii_letter++)
-      {
-	LCD_Write_Char(ascii_letter,blue,white);
-	LCD_Advance_Cursor();
-      }
-    }
-  */  
-
-
-
   }
 }
 
@@ -166,4 +136,12 @@ ISR(TIMER0_OVF_vect)           // every 10ms
   i &= ct0 & ct1;              // count until roll over ?
   key_state ^= i;              // then toggle debounced state
   key_press |= key_state & i;  // 0->1: key press detect
+}
+
+//Game timer
+ISR(TIMER1_OVF_vect)
+{
+  //TODO: Make the overflow time shorted as the game advances in level
+  TCNT1 = (unsigned int)(signed short)-(F_CPU / 1024);  //Preload the timer for 1 second
+  drop_timer_flag = 1;					//Set flag so that piece will drop
 }
