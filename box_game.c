@@ -19,6 +19,18 @@ Program flow:
 * for a 12x8 playing area                  *
 *******************************************/
 
+//TODO: make this scaleable
+/*
+    This can be scaled and still keep it a 1 dimensional array.
+    We can use BOX_board_bottom and BOX_board_right to calculate
+    where in the array data will be stored.
+
+    This should be useful somehow:
+      BOX_location[((x_loc%BOX_board_right)*BOX_board_rigth)+BOX_board_right)]
+
+*/
+    
+
 unsigned char BOX_location[12] = {
   0b00000000,
   0b00000000,
@@ -201,7 +213,7 @@ void BOX_rotate(unsigned char direction)
   BOX_store_loc();
 }
 
-void BOX_draw(unsigned char X, unsigned char Y)
+void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 {
   LCD_Out(0x2A, 1); //Set Column location
   LCD_Out(X*8, 0);
@@ -210,9 +222,9 @@ void BOX_draw(unsigned char X, unsigned char Y)
   LCD_Out(Y*8, 0);
   LCD_Out((Y*8)+7, 0);
   LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<64; i++) LCD_Out(red,0);
+  for (unsigned char i=0; i<64; i++) LCD_Out(color,0);
 }
-void BOX_erase(unsigned char X, unsigned char Y)
+void BOX_erase(unsigned char X, unsigned char Y, unsigned char color)
 {
   LCD_Out(0x2A, 1); //Set Column location
   LCD_Out(X*8, 0);
@@ -235,7 +247,8 @@ void BOX_write_piece(void)  //Writes piece to display
       {
 	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
 	{
-	  BOX_draw(x_loc+i, y_loc-j);
+	  //TODO: change this for different colored playing pieces
+	  BOX_draw(x_loc+i, y_loc-j, default_fg_color);
 	}
       }
     }
@@ -253,9 +266,26 @@ void BOX_clear_piece(void)  //Clears piece from display
       {
 	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
 	{
-	  BOX_erase(x_loc+i, y_loc-j);
+	  //TODO: Change this for different bg colors on each level
+	  BOX_erase(x_loc+i, y_loc-j, default_bg_color);
 	}
       }
+    }
+  }
+}
+
+void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrites entire playing area
+{
+  //TODO: make this work for more that 8 rows
+  
+  //cycle through columns
+  for (unsigned char i=0; i<=BOX_board_right; i++)
+  {
+    //cycle through rows
+    for (unsigned char j=0; j<=BOX_board_bottom; j++)
+    {
+      if (BOX_location[i] & 1<<j) BOX_draw(i, j, fgcolor);
+      else BOX_draw(i, j, bgcolor);
     }
   }
 }
@@ -340,6 +370,33 @@ void BOX_up(void)
   BOX_spawn();
 }
 
+void BOX_line_check(void)
+{
+  //TODO: Tweak this to enable scoring
+  
+  //Check every line on the playing area for complete rows and record them in an array
+  //TODO: make this work for more than 8 rows
+  unsigned char complete_lines[4];
+  unsigned char temp_index = 0;			//Index for complete_lines[]
+  for (unsigned char i=0; i<=BOX_board_bottom; i++)
+  {
+    unsigned char j=0;
+    while ((j<=BOX_board_right) && (BOX_location[j] & 1<<i))
+    {
+      if (j == BOX_board_right) complete_lines[temp_index++] = i; //Complete row found, record in complete_lines[]
+      ++j;
+    }  
+  }
+  if (temp_index == 0) return;  //If no complete rows, return
+  BOX_rewrite_display(green, white);	//Test to see if this works.
+  //If there are complete rows
+    //TODO: Disable interrrupts to pause game flow
+    //TODO: Add an arbitrary delay, perhaps make complete lines flash?
+
+  //Rewrite BOX_location[] without completed rows.
+    
+}
+
 void BOX_dn(void)
 {
   if (BOX_check(0, 1)) 
@@ -350,6 +407,8 @@ void BOX_dn(void)
     {
       //This is the second time, set piece here and spawn a new one
       soft_landing = 0; //unset variable in preparation for new piece
+      BOX_rewrite_display(blue, default_bg_color);
+      BOX_line_check();
       BOX_spawn();
     }
     //This is not the second time, set the "soft_landing" flag and return
