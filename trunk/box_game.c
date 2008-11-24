@@ -153,7 +153,6 @@ void BOX_load_reference(unsigned char piece, unsigned char rotation)
 void BOX_rotate(unsigned char direction)
 {
   //TODO: Check if we are going to hit something when we rotate
-  //TODO: Check if we will go off the screen when we rotate
   //working area
   BOX_clear_loc(); //Clear current location so we don't have false compares
 
@@ -168,12 +167,12 @@ void BOX_rotate(unsigned char direction)
   //check left
   if ((new_position[0] & 0x0F) && (x_loc > BOX_board_right)) { BOX_store_loc(); return; }
     //Find how much we need to go right to rotate
-    //Check this distance below us and move right if possible    //Find how much we need to go down to rotate
+    //Check this distance and move right if possible    //Find how much we need to go down to rotate
   //check right
   if ((new_position[1] & 0xF0) && (x_loc+3 > BOX_board_right)) { BOX_store_loc(); return; }
   if ((new_position[1] & 0x0F) && (x_loc+2 > BOX_board_right)) { BOX_store_loc(); return; }
     //Find how much we need to go down to rotate
-    //Check this distance below us and move left if possible
+    //Check this distance and move left if possible
   //check top
     //Find how much we need to go down to rotate
     //Check this distance below us and move down if possible
@@ -181,9 +180,20 @@ void BOX_rotate(unsigned char direction)
   if (((new_position[0] | new_position[1]) & 0x44) && (y_loc > BOX_board_bottom)) { BOX_store_loc(); return; }
     //if something is below us, too bad!
 
+  //Check if Rotation will hit another piece
+  unsigned char temp_area[2];
+  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
+  {
+    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
+    {
+      if (BOX_location[x_loc+i] & 1<<(y_loc-j)) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
+      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//No Box: 0
+    }
+  }
+  if ((temp_area[0] & new_position[0]) || (temp_area[1] & new_position[1])) { BOX_store_loc(); return; }
 
-  //end working area
-  //BOX_clear_loc();
+  
+  //Rotation will not cause an overlap or overflow and can proceed
   BOX_clear_piece();
   if (++rotate > 3) rotate = 0;
   BOX_load_reference(cur_piece, rotate);
