@@ -154,7 +154,36 @@ void BOX_rotate(unsigned char direction)
 {
   //TODO: Check if we are going to hit something when we rotate
   //TODO: Check if we will go off the screen when we rotate
-  BOX_clear_loc();
+  //working area
+  BOX_clear_loc(); //Clear current location so we don't have false compares
+
+  //Load in the candidate rotation
+  unsigned char new_position[2];
+  unsigned char new_rotate = rotate;
+  if (++new_rotate > 3) new_rotate = 0;
+  new_position[0] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2)));
+  new_position[1] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2) + 1));
+
+  
+  //check left
+  if ((new_position[0] & 0x0F) && (x_loc > BOX_board_right)) { BOX_store_loc(); return; }
+    //Find how much we need to go right to rotate
+    //Check this distance below us and move right if possible    //Find how much we need to go down to rotate
+  //check right
+  if ((new_position[1] & 0xF0) && (x_loc+3 > BOX_board_right)) { BOX_store_loc(); return; }
+  if ((new_position[1] & 0x0F) && (x_loc+2 > BOX_board_right)) { BOX_store_loc(); return; }
+    //Find how much we need to go down to rotate
+    //Check this distance below us and move left if possible
+  //check top
+    //Find how much we need to go down to rotate
+    //Check this distance below us and move down if possible
+  //check bottom
+  if (((new_position[0] | new_position[1]) & 0x44) && (y_loc > BOX_board_bottom)) { BOX_store_loc(); return; }
+    //if something is below us, too bad!
+
+
+  //end working area
+  //BOX_clear_loc();
   BOX_clear_piece();
   if (++rotate > 3) rotate = 0;
   BOX_load_reference(cur_piece, rotate);
