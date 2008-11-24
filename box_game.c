@@ -103,14 +103,17 @@ void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
     if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
+    if ((x_loc+i) >= BOX_board_left)
     {
-    //prevent invalid indicies from being written
-      if ((y_loc-j) >= BOX_board_top)
+      for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
       {
-	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
+      //prevent invalid indicies from being written
+	if (((y_loc-j) >= BOX_board_top) && ((y_loc-j) <= BOX_board_bottom))
 	{
-	  BOX_location[x_loc+i] |= 1<<(y_loc-j);
+	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
+	  {
+	    BOX_location[x_loc+i] |= 1<<(y_loc-j);
+	  }
 	}
       }
     }
@@ -122,14 +125,17 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
     if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
+    if ((x_loc+i) >= BOX_board_left)
     {
-    //prevent invalid indicies from being written
-      if ((y_loc-j) >= BOX_board_top)
+      for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
       {
-	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
+      //prevent invalid indicies from being written
+	if (((y_loc-j) >= BOX_board_top) && ((y_loc-j) <= BOX_board_bottom))
 	{
-	  BOX_location[x_loc+i] &= ~(1<<(y_loc-j));
+	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
+	  {
+	    BOX_location[x_loc+i] &= ~(1<<(y_loc-j));
+	  }
 	}
       }
     }
@@ -248,9 +254,9 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
   //Check right
   if (X_offset > 0)
   {
-    if ((x_loc+X_offset+3 > BOX_board_right) && (BOX_piece[1] & 0xF0)) return 1;
-    if ((x_loc+X_offset+2 > BOX_board_right) && (BOX_piece[1] & 0x0F)) return 1;
-    if (x_loc+X_offset+1 > BOX_board_right) return 1;
+    if (((unsigned char)(x_loc+X_offset+3) > BOX_board_right) && (BOX_piece[1] & 0xF0)) return 1;
+    if (((unsigned char)(x_loc+X_offset+2) > BOX_board_right) && (BOX_piece[1] & 0x0F)) return 1;
+    if ((unsigned char)(x_loc+X_offset+1) > BOX_board_right) return 1;
   }
   //Check bottom
   if (Y_offset > 0)
@@ -265,12 +271,13 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
   {
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
-      if ((x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
-      else if ((x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
-      else if ((y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
-      else if (y_loc+Y_offset-j > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
-      else if (BOX_location[x_loc+X_offset+i] & 1<<(y_loc+Y_offset-j)) temp_area[i/2] |= 1<<((4*(i%2))+(3-j));
-      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));
+      //Weed out edges, previous checks ensure we have not left the playing area with the piece.
+      if ((unsigned char)(x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off left: 0
+      else if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off right: 0
+      else if ((unsigned char)(y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off top: 0
+      else if ((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off bottom: 0
+      else if (BOX_location[(unsigned char)(x_loc+X_offset+i)] & 1<<((unsigned char)(y_loc+Y_offset-j))) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
+      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));								//No Box: 0
     }
   }
   BOX_store_loc();	//Store the current location that we cleared earlier
@@ -335,10 +342,6 @@ void BOX_lt(void)
 void BOX_rt(void)
 {
   if (BOX_check(1, 0)) return; //Do nothing if moving causes an overlap
-  //if (((x_loc+3 == BOX_board_right) && (BOX_piece[1] & 0xF0)) ||
-  //    ((x_loc+2 == BOX_board_right) && (BOX_piece[1] & 0x0F)) || 
-  //    (x_loc+1 == BOX_board_right)) return; //Do nothing if we're at the right edge already
-  //if (BOX_location[x_loc+1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
   ++x_loc;
