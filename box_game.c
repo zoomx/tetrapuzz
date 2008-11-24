@@ -94,6 +94,8 @@ static const char PROGMEM BOX_reference[] = {
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
+unsigned char soft_landing = 0;	//1 = we've hit the ground (one chance left to move the piece
+				//0 = nothing below us
 
 //Functions
 void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
@@ -294,10 +296,23 @@ void BOX_up(void)
 
 void BOX_dn(void)
 {
-  if (BOX_check(0, 1)) return; //Do nothing if moving causes an overlap
-  //if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) ||
-  //	((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x44))) return; //Do nothing if we're at the bottom already
-  //if (BOX_location[x_loc] & 1<<(y_loc+1)) return; //Do nothing if there is a box below us
+  if (BOX_check(0, 1)) 
+  {
+    //Overlap has been found
+    //Check if this is the second time it has happened (while moving down)
+    if (soft_landing)
+    {
+      //This is the second time, set piece here and spawn a new one
+      soft_landing = 0; //unset variable in preparation for new piece
+      BOX_spawn();
+    }
+    //This is not the second time, set the "soft_landing" flag and return
+    soft_landing = 1;
+    return;
+  }
+
+  soft_landing = 0; //There's nothing below us, make sure the soft_landing flag is unset
+
   BOX_clear_loc();
   BOX_clear_piece();
   ++y_loc;
