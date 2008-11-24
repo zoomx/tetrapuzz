@@ -272,12 +272,12 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
       //Weed out edges, previous checks ensure we have not left the playing area with the piece.
-      if ((unsigned char)(x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off left: 0
-      else if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off right: 0
-      else if ((unsigned char)(y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off top: 0
-      else if ((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));			//Off bottom: 0
+      if ((unsigned char)(x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off left: 0
+      else if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off right: 0
+      else if ((unsigned char)(y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off top: 0
+      else if ((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off bottom: 0
       else if (BOX_location[(unsigned char)(x_loc+X_offset+i)] & 1<<((unsigned char)(y_loc+Y_offset-j))) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
-      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));								//No Box: 0
+      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//No Box: 0
     }
   }
   BOX_store_loc();	//Store the current location that we cleared earlier
