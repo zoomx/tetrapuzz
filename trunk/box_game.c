@@ -106,8 +106,6 @@ static const char PROGMEM BOX_reference[] = {
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
-unsigned char soft_landing = 0;	//1 = we've hit the ground (one chance left to move the piece
-				//0 = nothing below us
 
 //Functions
 void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
@@ -416,7 +414,6 @@ void BOX_line_check(void)
     }
     else for (unsigned char j=0; j<=BOX_board_right; j++)
     {
-      //TODO: add code to handle the top row being filled
       //if the bit in the row above the full row is 1, set that in the full row
       if (BOX_location[j] & 1<<(BOX_board_bottom-i-row_write_tracker)) BOX_location[j] |= 1<<(BOX_board_bottom-i);
       //otherwise make sure that bit is unset
@@ -430,22 +427,11 @@ void BOX_dn(void)
 {
   if (BOX_check(0, 1)) 
   {
-    //Overlap has been found
-    //Check if this is the second time it has happened (while moving down)
-    if (soft_landing)
-    {
-      //This is the second time, set piece here and spawn a new one
-      soft_landing = 0; //unset variable in preparation for new piece
-      BOX_rewrite_display(blue, default_bg_color);
-      BOX_line_check();
-      BOX_spawn();
-    }
-    //This is not the second time, set the "soft_landing" flag and return
-    soft_landing = 1;
-    return;
+    //Set piece here and spawn a new one
+    BOX_rewrite_display(blue, default_bg_color);
+    BOX_line_check();
+    BOX_spawn();
   }
-
-  soft_landing = 0; //There's nothing below us, make sure the soft_landing flag is unset
 
   BOX_clear_loc();
   BOX_clear_piece();
