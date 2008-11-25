@@ -389,16 +389,41 @@ void BOX_line_check(void)
   }
   if (temp_index == 0) return;  //If no complete rows, return
 
+  /*
   for (unsigned char i=0; i < temp_index; i++)
   {
     for (unsigned char j=0; j <= BOX_board_right; j++) BOX_draw(j, complete_lines[i], green);//Test to see if this works.
   }
+  */
+
   //If there are complete rows
-    //TODO: Disable interrrupts to pause game flow
+    //TODO: Disable interrupts to pause game flow
     //TODO: Add an arbitrary delay, perhaps make complete lines flash?
 
   //Rewrite BOX_location[] without completed rows.
-    
+  --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
+  unsigned char row_write_tracker = 0; //Tracks how many rows above the current row we are getting information from.
+  for (unsigned char i=0; i<=BOX_board_bottom; i++)
+  {
+    if (complete_lines[temp_index] == (BOX_board_bottom-i-row_write_tracker))
+    {
+      ++row_write_tracker;
+      if (temp_index > 0) --temp_index;
+    }
+    if (i+row_write_tracker > BOX_board_bottom)	//Clear with zeros if all rows have been shifted down
+    {
+      for (unsigned char j=0; j<=BOX_board_right; j++) BOX_location[j] &= ~(1<<(BOX_board_bottom-i));
+    }
+    else for (unsigned char j=0; j<=BOX_board_right; j++)
+    {
+      //TODO: add code to handle the top row being filled
+      //if the bit in the row above the full row is 1, set that in the full row
+      if (BOX_location[j] & 1<<(BOX_board_bottom-i-row_write_tracker)) BOX_location[j] |= 1<<(BOX_board_bottom-i);
+      //otherwise make sure that bit is unset
+      else BOX_location[j] &= ~(1<<(BOX_board_bottom-i));
+    }
+  }
+  BOX_rewrite_display(yellow, white);
 }
 
 void BOX_dn(void)
