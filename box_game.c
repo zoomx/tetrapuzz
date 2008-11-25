@@ -114,8 +114,8 @@ void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
-    if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    if ((x_loc+i) >= BOX_board_left)
+    //if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
+    if (((unsigned char)(x_loc+i) >= BOX_board_left) && ((unsigned char)(x_loc+i) <= BOX_board_right))
     {
       for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
       {
@@ -124,7 +124,7 @@ void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
 	{
 	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
 	  {
-	    BOX_location[x_loc+i] |= 1<<(y_loc-j);
+	    BOX_location[(unsigned char)(x_loc+i)] |= 1<<(y_loc-j);
 	  }
 	}
       }
@@ -136,8 +136,8 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
   {
-    if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    if ((x_loc+i) >= BOX_board_left)
+    //if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
+    if (((unsigned char)(x_loc+i) >= BOX_board_left) && ((unsigned char)(x_loc+i) <= BOX_board_right))
     {
       for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
       {
@@ -146,7 +146,7 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
 	{
 	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
 	  {
-	    BOX_location[x_loc+i] &= ~(1<<(y_loc-j));
+	    BOX_location[(unsigned char)(x_loc+i)] &= ~(1<<(y_loc-j));
 	  }
 	}
       }
@@ -388,7 +388,11 @@ void BOX_line_check(void)
     }  
   }
   if (temp_index == 0) return;  //If no complete rows, return
-  BOX_rewrite_display(green, white);	//Test to see if this works.
+
+  for (unsigned char i=0; i < temp_index; i++)
+  {
+    for (unsigned char j=0; j <= BOX_board_right; j++) BOX_draw(j, complete_lines[i], green);//Test to see if this works.
+  }
   //If there are complete rows
     //TODO: Disable interrrupts to pause game flow
     //TODO: Add an arbitrary delay, perhaps make complete lines flash?
