@@ -75,6 +75,7 @@ unsigned char get_key_press(unsigned char key_mask)
 
 int main(void)
 {
+  random_piece = 0;
   init_io();
   init_timers();
   LCD_init();
@@ -134,6 +135,8 @@ ISR(TIMER0_OVF_vect)           // every 10ms
   i &= ct0 & ct1;              // count until roll over ?
   key_state ^= i;              // then toggle debounced state
   key_press |= key_state & i;  // 0->1: key press detect
+
+  if (++random_piece > 6) random_piece = 0;
 }
 
 //Game timer

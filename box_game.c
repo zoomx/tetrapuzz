@@ -291,8 +291,7 @@ void BOX_spawn(void)
 {
   x_loc = 4;
   y_loc = 0;
-  cur_piece = (rand() % 7);	//Select a piece randomly
-  rotate = 0;
+  cur_piece = random_piece;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
   
@@ -432,6 +431,7 @@ void BOX_dn(void)
     BOX_line_check();
     //TODO: Add check for full board, stop game if found
     BOX_spawn();
+    return;
   }
 
   BOX_clear_loc();
