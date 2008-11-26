@@ -152,10 +152,8 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
   }
 }
 
-
 void BOX_load_reference(unsigned char piece, unsigned char rotation)
 {
-//pgm_read_byte((char *)((int)font5x8 + (5 * letter) + i));
   BOX_piece[0] = pgm_read_byte((char *)(BOX_reference + (piece*8) + (rotation*2)));
   BOX_piece[1] = pgm_read_byte((char *)(BOX_reference + (piece*8) + (rotation*2) + 1));
 }
@@ -222,6 +220,7 @@ void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
   LCD_Out(0x2C, 1); //Write Data
   for (unsigned char i=0; i<64; i++) LCD_Out(color,0);
 }
+
 void BOX_erase(unsigned char X, unsigned char Y, unsigned char color)
 {
   LCD_Out(0x2A, 1); //Set Column location
@@ -292,6 +291,7 @@ void BOX_spawn(void)
 {
   x_loc = 4;
   y_loc = 0;
+  cur_piece = (rand() % 7);	//Select a piece randomly
   rotate = 0;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
@@ -299,7 +299,7 @@ void BOX_spawn(void)
   //calculate y_loc
   for (unsigned char i=0; i<3; i++)
   {
-    if((BOX_piece[0] | BOX_piece[1]) & 0b00010001<<i) y_loc++; //There is a box in the row, make sure we see it
+    if((BOX_piece[0] | BOX_piece[1]) & 0x11<<i) ++y_loc; //There is a box in the row, make sure we see it
   }
 
   BOX_store_loc(); //Store new location
@@ -430,6 +430,7 @@ void BOX_dn(void)
     //Set piece here and spawn a new one
     BOX_rewrite_display(blue, default_bg_color);
     BOX_line_check();
+    //TODO: Add check for full board, stop game if found
     BOX_spawn();
   }
 
