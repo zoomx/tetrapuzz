@@ -50,11 +50,9 @@ void init_timers(void)
   TIMSK0 |= 1<<TOIE0;			//enable timer overflow interrupt
 
   //Timer1 for game timer
-/*
   TCCR1B |= 1<<CS12 | 1<<CS10;		//Divide by 1024
   TIMSK1 |= 1<<TOIE1;			//enable timer overflow interupt
   TCNT1 = (unsigned int)(signed short)-(F_CPU / 1024);  //Preload the timer for 1 second
-*/
   sei();
 }
 
@@ -141,7 +139,7 @@ ISR(TIMER0_OVF_vect)           // every 10ms
 //Game timer
 ISR(TIMER1_OVF_vect)
 {
-  //TODO: Make the overflow time shorted as the game advances in level
+  //TODO: Make the overflow time shorter as the game advances in level
   TCNT1 = (unsigned int)(signed short)-(F_CPU / 1024);  //Preload the timer for 1 second
   drop_timer_flag = 1;					//Set flag so that piece will drop
 }

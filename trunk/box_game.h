@@ -1,4 +1,5 @@
 #include <avr/pgmspace.h>
+#include <stdlib.h>
 
 #define BOX_board_top		0
 #define BOX_board_bottom	7
