@@ -1,5 +1,4 @@
 #include <avr/pgmspace.h>
-#include <stdlib.h>
 
 #define BOX_board_top		0
 #define BOX_board_bottom	7
@@ -8,6 +7,8 @@
 
 #define default_fg_color	red
 #define default_bg_color	white
+
+volatile unsigned char random_piece;	//Used to select a piece "randomly" (but not really)
 
 //Prototypes
 void BOX_store_loc(void);
