@@ -81,7 +81,13 @@ int main(void)
   LCD_init();
 
   LCD_Fill_Screen(white);
-  BOX_spawn();
+
+  cursor_x = 8;
+  cursor_y = 9;
+  LCD_Write_String("Enter to Start",green,yellow);
+  
+  while(get_key_press(1<<BTN_ENTER) == 0) { }
+  BOX_start_game();
 
   while(1)
   {

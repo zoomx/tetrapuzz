@@ -301,6 +301,20 @@ void BOX_spawn(void)
     if((BOX_piece[0] | BOX_piece[1]) & 0x11<<i) ++y_loc; //There is a box in the row, make sure we see it
   }
 
+  //Check to see if we've filled the screen
+  for (unsigned char i=0; i<=y_loc; i++)
+  {
+    for (unsigned char j=0; j<4; j++)
+    {
+      if ((BOX_location[x_loc+j] & 1<<i)
+      && (BOX_piece[j%2] & 1<<((4*(j%2))+(3-i))))
+      {
+	BOX_end_game();
+	break;
+      }
+    }
+  }
+
   BOX_store_loc(); //Store new location
   BOX_write_piece(); //draw piece
 }
@@ -353,18 +367,6 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 
 
   return 0;
-}
-
-void BOX_up(void)
-{
-  BOX_clear_loc();
-  BOX_clear_piece();
-
-  if (++cur_piece > 6) cur_piece = 0;
-  x_loc = 4;
-  y_loc = 0;
-
-  BOX_spawn();
 }
 
 void BOX_line_check(void)
@@ -422,6 +424,18 @@ void BOX_line_check(void)
   BOX_rewrite_display(yellow, white);
 }
 
+void BOX_up(void)
+{
+  BOX_clear_loc();
+  BOX_clear_piece();
+
+  if (++cur_piece > 6) cur_piece = 0;
+  x_loc = 4;
+  y_loc = 0;
+
+  BOX_spawn();
+}
+
 void BOX_dn(void)
 {
   if (BOX_check(0, 1)) 
@@ -461,4 +475,18 @@ void BOX_rt(void)
   ++x_loc;
   BOX_write_piece();
   BOX_store_loc();
+}
+
+void BOX_start_game(void)
+{
+  //TODO: Clear BOX_location[]
+  
+  BOX_spawn();
+}
+
+void BOX_end_game(void)
+{
+  TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
+  BOX_rewrite_display(black,red);
+  while(1) { }
 }
