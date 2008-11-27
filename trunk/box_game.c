@@ -204,25 +204,25 @@ void BOX_rotate(unsigned char direction)
 void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 {
   LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*8, 0);
-  LCD_Out((X*8)+7, 0);
+  LCD_Out(X*4, 0);
+  LCD_Out((X*4)+3, 0);
   LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*8, 0);
-  LCD_Out((Y*8)+7, 0);
+  LCD_Out(Y*4, 0);
+  LCD_Out((Y*4)+3, 0);
   LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<64; i++) LCD_Out(color,0);
+  for (unsigned char i=0; i<16; i++) LCD_Out(color,0);
 }
 
 void BOX_erase(unsigned char X, unsigned char Y, unsigned char color)
 {
   LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*8, 0);
-  LCD_Out((X*8)+7, 0);
+  LCD_Out(X*4, 0);
+  LCD_Out((X*4)+3, 0);
   LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*8, 0);
-  LCD_Out((Y*8)+7, 0);
+  LCD_Out(Y*4, 0);
+  LCD_Out((Y*4)+3, 0);
   LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<64; i++) LCD_Out(white,0);
+  for (unsigned char i=0; i<16; i++) LCD_Out(white,0);
 }
 
 void BOX_write_piece(void)  //Writes piece to display
