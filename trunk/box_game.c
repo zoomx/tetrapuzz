@@ -31,20 +31,7 @@ Program flow:
 */
     
 
-unsigned char BOX_location[12] = {
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000,
-  0b00000000
-};
+unsigned char BOX_location[12];
 
 /*********************************************
 * BOX_piece[] is a 4x4 represntation of      *
@@ -106,6 +93,11 @@ static const char PROGMEM BOX_reference[] = {
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
+
+//Messages
+static const char PROGMEM message1[] = { "Tetrapuzz!" };
+static const char PROGMEM message2[] = { "click to start" };
+static const char PROGMEM message3[] = { "Game Over" };
 
 //Functions
 void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
@@ -477,10 +469,24 @@ void BOX_rt(void)
   BOX_store_loc();
 }
 
+void BOX_pregame(void)
+{
+  LCD_Fill_Screen(yellow);
+
+  cursor_x = 18;
+  cursor_y = 9;
+  LCD_Write_String_P(message1,green,yellow);
+
+  cursor_x = 6;
+  cursor_y = 20;
+  LCD_Write_String_P(message2,black,yellow); 
+}
+
 void BOX_start_game(void)
 {
-  //TODO: Clear BOX_location[]
-  
+  //Poplulate BOX_location[] with 0b00000000
+  for (unsigned char i=0; i<(BOX_board_right+1); i++) BOX_location[i] = 0x00;
+  BOX_rewrite_display(blue, white);
   BOX_spawn();
 }
 
@@ -488,5 +494,8 @@ void BOX_end_game(void)
 {
   TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
   BOX_rewrite_display(black,red);
+  cursor_x = 24;
+  cursor_y = 29;
+  LCD_Write_String_P(message3,white,black);
   while(1) { }
 }
