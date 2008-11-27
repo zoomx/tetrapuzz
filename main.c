@@ -37,7 +37,7 @@ volatile unsigned char drop_timer_flag = 0;
 
 void init_io(void)
 {
-  KEY_DDR |= ~KEY_MSK;		//Set button pins as inputs
+  KEY_DDR |= ~KEY_MSK;	//Set button pins as inputs
   KEY_PORT |= KEY_MSK;	//Enable internal pullups
   
 }
@@ -80,11 +80,7 @@ int main(void)
   init_timers();
   LCD_init();
 
-  LCD_Fill_Screen(white);
-
-  cursor_x = 8;
-  cursor_y = 9;
-  LCD_Write_String("Enter to Start",green,yellow);
+  BOX_pregame();
   
   while(get_key_press(1<<BTN_ENTER) == 0) { }
   BOX_start_game();
@@ -93,7 +89,8 @@ int main(void)
   {
     if (get_key_press(1<<BTN_UP))
     {
-      BOX_up();
+      //BOX_up();
+      BOX_rotate(1);
     }    
 
     if (get_key_press(1<<BTN_DN)) 
