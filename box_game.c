@@ -413,7 +413,7 @@ void BOX_line_check(void)
       else BOX_location[j] &= ~(1<<(BOX_board_bottom-i));
     }
   }
-  BOX_rewrite_display(yellow, white);
+  BOX_rewrite_display(blue, white);
 }
 
 void BOX_up(void)
