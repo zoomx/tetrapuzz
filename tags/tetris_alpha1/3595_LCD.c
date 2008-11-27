@@ -277,7 +277,6 @@ void LCD_Hello_World(void)
 
 void LCD_Advance_Cursor(void)
 {
-  //TODO: Need space between letters and lines???
   cursor_x += 6;
   if (cursor_x+5 > page_size)
   {
@@ -295,6 +294,16 @@ void LCD_Write_String(char * myString, unsigned char fgcolor, unsigned char bgco
     LCD_Advance_Cursor();
     ++myString;				//Increment the point which tracks where we are in the string
 
+  }
+}
+
+void LCD_Write_String_P(const char * myString, unsigned char fgcolor, unsigned char bgcolor)  //Function that reads a string out of memory and displays it
+{
+  while (pgm_read_byte(myString))
+  {
+    LCD_Write_Char(pgm_read_byte(myString),fgcolor,bgcolor);
+    LCD_Advance_Cursor();
+    ++myString;
   }
 }
 
