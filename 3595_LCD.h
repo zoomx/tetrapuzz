@@ -49,5 +49,6 @@ void LCD_StripedScreen(void);
 void LCD_Hello_World(void);
 void LCD_Advance_Cursor(void);
 void LCD_Write_String(char * myString, unsigned char fgcolor, unsigned char bgcolor);
+void LCD_Write_String_P(const char * myString, unsigned char fgcolor, unsigned char bgcolor);
 void LCD_Write_Char(unsigned char letter, unsigned char fgcolor, unsigned char bgcolor);
 void LCD_Fill_Screen(unsigned char color);

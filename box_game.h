@@ -27,5 +27,6 @@ void BOX_up(void);
 void BOX_dn(void);
 void BOX_lt(void);
 void BOX_rt(void);
+void BOX_pregame(void);
 void BOX_start_game(void);
 void BOX_end_game(void);
