@@ -1,7 +1,7 @@
 #include <avr/pgmspace.h>
 
 #define BOX_board_top		0
-#define BOX_board_bottom	7
+#define BOX_board_bottom	23
 #define BOX_board_left		0
 #define BOX_board_right		11
 
@@ -11,6 +11,9 @@
 volatile unsigned char random_piece;	//Used to select a piece "randomly" (but not really)
 
 //Prototypes
+unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y);
+void BOX_loc_set_bit(unsigned char X, unsigned char Y);
+void BOX_loc_clear_bit(unsigned char X, unsigned char Y);
 void BOX_store_loc(void);
 void BOX_clear_loc(void);
 void BOX_load_reference(unsigned char piece, unsigned char rotation);
