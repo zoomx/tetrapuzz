@@ -100,6 +100,46 @@ static const char PROGMEM message2[] = { "click to start" };
 static const char PROGMEM message3[] = { "Game Over" };
 
 //Functions
+unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y)
+{
+  //Calculate array index and shift amount
+  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
+  
+  //Make adjustment so that index is 0-7 and not 1-8
+  if (shift_index) shift_index -= 1;
+  else shift_index = 7;
+
+  if (BOX_location[X+array_index_offset] & 1<<shift_index) return 1;
+  else return 0;
+}
+
+void BOX_loc_set_bit(unsigned char X, unsigned char Y)
+{
+  //Calculate array index and shift amount
+  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
+  
+  //Make adjustment so that index is 0-7 and not 1-8
+  if (shift_index) shift_index -= 1;
+  else shift_index = 7;
+
+  BOX_location[X+array_index_offset] |= 1<<shift_index;
+}
+
+void BOX_loc_clear_bit(unsigned char X, unsigned char Y)
+{
+  //Calculate array index and shift amount
+  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
+  
+  //Make adjustment so that index is 0-7 and not 1-8
+  if (shift_index) shift_index -= 1;
+  else shift_index = 7;
+
+  BOX_location[X+array_index_offset] &= ~(1<<shift_index);
+}
+
 void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
