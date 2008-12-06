@@ -31,8 +31,6 @@ Program flow:
 */
     
 
-unsigned char BOX_location[12];
-
 /*********************************************
 * BOX_piece[] is a 4x4 represntation of      *
 * the currently selected playing piece.      *
@@ -90,6 +88,7 @@ static const char PROGMEM BOX_reference[] = {
 };
 
 //Variables
+unsigned char BOX_location[24];
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
@@ -140,6 +139,32 @@ void BOX_loc_clear_bit(unsigned char X, unsigned char Y)
   BOX_location[X+array_index_offset] &= ~(1<<shift_index);
 }
 
+void BOX_store_loc(void)
+{
+  //Step through 4 columns
+  for (unsigned char temp_col=0; temp_col<4; temp_col++)
+  {
+    //Only if x_loc is not out of bounds
+    if ((unsigned char)(x_loc+temp_col) <= BOX_board_right)
+    {
+      //Step through 4 rows
+      for (unsigned char temp_row=0; temp_row<4; temp_row++)
+      {
+	//Only if y_loc is not out of bounds
+	if (y_loc-temp_row <= BOX_board_bottom)
+	{
+	  if (BOX_piece[temp_col/2] & 1<<((4*(temp_col%2))+(3-temp_row)))	//Checks nibbles in Box_piece array
+	  {
+	    BOX_loc_set_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
+	  }
+	}
+      }
+    }
+  }
+}
+
+/* code rewrite */
+/*
 void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
@@ -161,7 +186,35 @@ void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
     }
   }
 }
+*/
+/* end rewrite */
 
+void BOX_clear_loc(void)
+{
+  //Step through 4 columns
+  for (unsigned char temp_col=0; temp_col<4; temp_col++)
+  {
+    //Only if x_loc is not out of bounds
+    if ((unsigned char)(x_loc+temp_col) <= BOX_board_right)
+    {
+      //Step through 4 rows
+      for (unsigned char temp_row=0; temp_row<4; temp_row++)
+      {
+	//Only if y_loc is not out of bounds
+	if (y_loc-temp_row <= BOX_board_bottom)
+	{
+	  if (BOX_piece[temp_col/2] & 1<<((4*(temp_col%2))+(3-temp_row)))	//Checks nibbles in Box_piece array
+	  {
+	    BOX_loc_clear_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
+	  }
+	}
+      }
+    }
+  }
+}
+
+/* code rewrite */
+/*
 void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
 {
   for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
@@ -183,6 +236,8 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
     }
   }
 }
+*/
+/* end rewrite */
 
 void BOX_load_reference(unsigned char piece, unsigned char rotation)
 {
@@ -305,6 +360,30 @@ void BOX_clear_piece(void)  //Clears piece from display
 
 void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrites entire playing area
 {
+  unsigned char array_depth = (BOX_board_bottom+1)/8;
+  if ((BOX_board_bottom+1)%8) ++array_depth;
+
+  //cycle through 8 row chunks
+  for (unsigned char row_chunk=0; row_chunk<array_depth; row_chunk++)
+  {
+    //cycle through columns
+    for (unsigned char temp_col=0; temp_col<=BOX_board_right; temp_col++)
+    {
+      //cycle through all rows in block
+      for (unsigned char temp_row=0; temp_row<8; temp_row++)	//We are workinging in 8 row chunks
+      {
+	//Make sure we're not out of bounds
+	if ((row_chunk*8)+temp_row <= BOX_board_bottom)
+	{
+	  if(BOX_loc_return_bit(temp_col,(row_chunk*8)+temp_row)) BOX_draw(temp_col,(row_chunk*8)+temp_row, fgcolor);
+	  else BOX_draw(temp_col,(row_chunk*8)+temp_row, bgcolor);
+	}
+      }
+    }
+  }
+
+/* code rewrite */
+/*
   //TODO: make this work for more that 8 rows
   
   //cycle through columns
@@ -317,6 +396,8 @@ void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrite
       else BOX_draw(i, j, bgcolor);
     }
   }
+*/
+/* end rewrite */
 }
 
 void BOX_spawn(void)
@@ -474,8 +555,7 @@ void BOX_dn(void)
   {
     //Set piece here and spawn a new one
     BOX_rewrite_display(blue, default_bg_color);
-    BOX_line_check();
-    //TODO: Add check for full board, stop game if found
+//NOTE:testing    BOX_line_check();
     BOX_spawn();
     return;
   }
@@ -524,8 +604,17 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
+  //Define BOX_location array
+
+/*
+  unsigned char array_size = (BOX_board_bottom+1)/8;
+  if ((BOX_board_bottom+1)%8) ++array_size;
+  array_size *= (BOX_board_right+1);
+*/
+  //unsigned char BOX_location[24];
+
   //Poplulate BOX_location[] with 0b00000000
-  for (unsigned char i=0; i<(BOX_board_right+1); i++) BOX_location[i] = 0x00;
+  for (unsigned char i=0; i<24; i++) { BOX_location[i] = 0x00; }
   BOX_rewrite_display(blue, white);
   BOX_spawn();
 }

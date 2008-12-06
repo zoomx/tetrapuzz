@@ -1,7 +1,7 @@
 #include <avr/pgmspace.h>
 
 #define BOX_board_top		0
-#define BOX_board_bottom	23
+#define BOX_board_bottom	15
 #define BOX_board_left		0
 #define BOX_board_right		11
 
