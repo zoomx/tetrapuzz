@@ -2,7 +2,7 @@
 #include <avr/interrupt.h>
 
 #include "3595_LCD.h"
-#include "box_game.c"
+#include "box_game.h"
 
 //Debounce definitions
 #define KEY_DDR 	DDRD
@@ -39,7 +39,7 @@ void init_io(void)
 {
   KEY_DDR |= ~KEY_MSK;	//Set button pins as inputs
   KEY_PORT |= KEY_MSK;	//Enable internal pullups
-  
+
 }
 
 void init_timers(void)
@@ -81,7 +81,7 @@ int main(void)
   LCD_init();
 
   BOX_pregame();
-  
+
   while(get_key_press(1<<BTN_ENTER) == 0) { }
   BOX_start_game();
 
@@ -91,22 +91,22 @@ int main(void)
     {
       //BOX_up();
       BOX_rotate(1);
-    }    
+    }
 
-    if (get_key_press(1<<BTN_DN)) 
+    if (get_key_press(1<<BTN_DN))
     {
       BOX_dn();
     }
 
-    if (get_key_press(1<<BTN_LT)) { 
+    if (get_key_press(1<<BTN_LT)) {
       BOX_lt();
     }
 
-    if (get_key_press(1<<BTN_RT)) 
-    { 
+    if (get_key_press(1<<BTN_RT))
+    {
       BOX_rt();
     }
-    
+
     if (get_key_press(1<<BTN_ENTER))
     {
       BOX_rotate(1);
