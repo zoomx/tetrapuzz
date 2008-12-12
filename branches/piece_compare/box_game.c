@@ -29,7 +29,7 @@ Program flow:
       BOX_location[((x_loc%BOX_board_right)*BOX_board_rigth)+BOX_board_right)]
 
 */
-    
+
 
 /*********************************************
 * BOX_piece[] is a 4x4 represntation of      *
@@ -49,7 +49,7 @@ static const char PROGMEM BOX_reference[] = {
     0b11100000, 0b00000100,
     0b11000100, 0b00000100,
     0b11100100, 0b00000000,
-  
+
   //  _|-- (S)
     0b11001000, 0b00000100,
     0b11000110, 0b00000000,
@@ -80,7 +80,7 @@ static const char PROGMEM BOX_reference[] = {
     0b11001100, 0b00000000,
     0b11001100, 0b00000000,
 
-  // ---- (line)  
+  // ---- (line)
     0b01000100, 0b01000100,
     0b11110000, 0b00000000,
     0b01000100, 0b01000100,
@@ -104,7 +104,7 @@ unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y)
   //Calculate array index and shift amount
   unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
   unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-  
+
   //Make adjustment so that index is 0-7 and not 1-8
   if (shift_index) shift_index -= 1;
   else shift_index = 7;
@@ -118,7 +118,7 @@ void BOX_loc_set_bit(unsigned char X, unsigned char Y)
   //Calculate array index and shift amount
   unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
   unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-  
+
   //Make adjustment so that index is 0-7 and not 1-8
   if (shift_index) shift_index -= 1;
   else shift_index = 7;
@@ -131,7 +131,7 @@ void BOX_loc_clear_bit(unsigned char X, unsigned char Y)
   //Calculate array index and shift amount
   unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
   unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-  
+
   //Make adjustment so that index is 0-7 and not 1-8
   if (shift_index) shift_index -= 1;
   else shift_index = 7;
@@ -258,7 +258,7 @@ void BOX_rotate(unsigned char direction)
   new_position[0] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2)));
   new_position[1] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2) + 1));
 
-  
+
   //check left
   if ((new_position[0] & 0x0F) && (x_loc > BOX_board_right)) { BOX_store_loc(); return; }
     //Find how much we need to go right to rotate
@@ -287,7 +287,7 @@ void BOX_rotate(unsigned char direction)
   }
   if ((temp_area[0] & new_position[0]) || (temp_area[1] & new_position[1])) { BOX_store_loc(); return; }
 
-  
+
   //Rotation will not cause an overlap or overflow and can proceed
   BOX_clear_piece();
   if (++rotate > 3) rotate = 0;
@@ -385,7 +385,7 @@ void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrite
 /* code rewrite */
 /*
   //TODO: make this work for more that 8 rows
-  
+
   //cycle through columns
   for (unsigned char i=0; i<=BOX_board_right; i++)
   {
@@ -407,7 +407,7 @@ void BOX_spawn(void)
   cur_piece = random_piece;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
-  
+
   //calculate y_loc
   for (unsigned char i=0; i<3; i++)
   {
@@ -469,7 +469,8 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
       else if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off right: 0
       else if ((unsigned char)(y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off top: 0
       else if ((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off bottom: 0
-      else if (BOX_location[(unsigned char)(x_loc+X_offset+i)] & 1<<((unsigned char)(y_loc+Y_offset-j))) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
+      //else if (BOX_location[(unsigned char)(x_loc+X_offset+i)] & 1<<((unsigned char)(y_loc+Y_offset-j))) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
+      else if (BOX_loc_return_bit((unsigned char)(x_loc+X_offset+i),(unsigned char)(y_loc+Y_offset-j)));
       else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//No Box: 0
     }
   }
@@ -485,7 +486,7 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 void BOX_line_check(void)
 {
   //TODO: Tweak this to enable scoring
-  
+
   //Check every line on the playing area for complete rows and record them in an array
   //TODO: make this work for more than 8 rows
   unsigned char complete_lines[4];
@@ -497,7 +498,7 @@ void BOX_line_check(void)
     {
       if (j == BOX_board_right) complete_lines[temp_index++] = i; //Complete row found, record in complete_lines[]
       ++j;
-    }  
+    }
   }
   if (temp_index == 0) return;  //If no complete rows, return
 
@@ -551,7 +552,7 @@ void BOX_up(void)
 
 void BOX_dn(void)
 {
-  if (BOX_check(0, 1)) 
+  if (BOX_check(0, 1))
   {
     //Set piece here and spawn a new one
     BOX_rewrite_display(blue, default_bg_color);
@@ -599,7 +600,7 @@ void BOX_pregame(void)
 
   cursor_x = 6;
   cursor_y = 20;
-  LCD_Write_String_P(message2,black,yellow); 
+  LCD_Write_String_P(message2,black,yellow);
 }
 
 void BOX_start_game(void)
