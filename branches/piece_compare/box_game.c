@@ -88,7 +88,7 @@ static const char PROGMEM BOX_reference[] = {
 };
 
 //Variables
-unsigned char BOX_location[24];
+unsigned char BOX_location[array_size];
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
@@ -605,17 +605,8 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
-  //Define BOX_location array
-
-/*
-  unsigned char array_size = (BOX_board_bottom+1)/8;
-  if ((BOX_board_bottom+1)%8) ++array_size;
-  array_size *= (BOX_board_right+1);
-*/
-  //unsigned char BOX_location[24];
-
   //Poplulate BOX_location[] with 0b00000000
-  for (unsigned char i=0; i<24; i++) { BOX_location[i] = 0x00; }
+  for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
   BOX_rewrite_display(blue, white);
   BOX_spawn();
 }

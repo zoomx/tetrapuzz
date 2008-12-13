@@ -1,9 +1,13 @@
 #include <avr/pgmspace.h>
 
+//Note: top and left are depricated... get rid of them
 #define BOX_board_top		0
-#define BOX_board_bottom	15
 #define BOX_board_left		0
-#define BOX_board_right		11
+
+#define BOX_board_bottom	15
+#define BOX_board_right		9
+
+#define array_size (((BOX_board_bottom+8)/8) * (BOX_board_right + 1))
 
 #define default_fg_color	red
 #define default_bg_color	white
