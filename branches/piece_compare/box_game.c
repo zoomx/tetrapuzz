@@ -41,7 +41,7 @@ Program flow:
 * the display area.                          *
 *********************************************/
 
-unsigned char BOX_piece[] = { 0b00000000, 0b00000000 };
+unsigned char BOX_piece[4];
 
 static const char PROGMEM BOX_reference[7][4][4] = {
 		//T
@@ -431,8 +431,10 @@ void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
 
 void BOX_load_reference(unsigned char piece, unsigned char rotation)
 {
-  BOX_piece[0] = pgm_read_byte((char *)(BOX_reference + (piece*8) + (rotation*2)));
-  BOX_piece[1] = pgm_read_byte((char *)(BOX_reference + (piece*8) + (rotation*2) + 1));
+	  BOX_piece[0] = pgm_read_byte((char *)&BOX_reference[piece][rotation][0]);
+	  BOX_piece[1] = pgm_read_byte((char *)&BOX_reference[piece][rotation][1]);
+	  BOX_piece[2] = pgm_read_byte((char *)&BOX_reference[piece][rotation][2]);
+	  BOX_piece[3] = pgm_read_byte((char *)&BOX_reference[piece][rotation][3]);
 }
 
 void BOX_rotate(unsigned char direction)
