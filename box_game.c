@@ -99,6 +99,14 @@ static const char PROGMEM message2[] = { "click to start" };
 static const char PROGMEM message3[] = { "Game Over" };
 
 //Functions
+
+/**********************************************
+ * Functions that handle bits in BOX_location[]
+ * BOX_loc_return_bit
+ * BOX_loc_set_bit
+ * BOX_loc_clear_bit
+ ************************************************/
+
 unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y)
 {
   //Calculate array index and shift amount
@@ -138,6 +146,13 @@ void BOX_loc_clear_bit(unsigned char X, unsigned char Y)
 
   BOX_location[X+array_index_offset] &= ~(1<<shift_index);
 }
+
+/********************************
+ * Functions that handle bits in BOX_piece[]
+ * BOX_piece_return_bit()
+ * BOX_piece_set_bit()
+ * BOX_piece_clear_bit()
+ */
 
 void BOX_store_loc(void)
 {
@@ -345,7 +360,7 @@ void BOX_clear_piece(void)  //Clears piece from display
   {
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
-    //prevent invalid indicies from being written
+    //prevent invalid indices from being written
       if ((y_loc-j) >= BOX_board_top)
       {
 	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
@@ -370,7 +385,7 @@ void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrite
     for (unsigned char temp_col=0; temp_col<=BOX_board_right; temp_col++)
     {
       //cycle through all rows in block
-      for (unsigned char temp_row=0; temp_row<8; temp_row++)	//We are workinging in 8 row chunks
+      for (unsigned char temp_row=0; temp_row<8; temp_row++)	//We are working in 8 row chunks
       {
 	//Make sure we're not out of bounds
 	if ((row_chunk*8)+temp_row <= BOX_board_bottom)
@@ -381,23 +396,6 @@ void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrite
       }
     }
   }
-
-/* code rewrite */
-/*
-  //TODO: make this work for more that 8 rows
-
-  //cycle through columns
-  for (unsigned char i=0; i<=BOX_board_right; i++)
-  {
-    //cycle through rows
-    for (unsigned char j=0; j<=BOX_board_bottom; j++)
-    {
-      if (BOX_location[i] & 1<<j) BOX_draw(i, j, fgcolor);
-      else BOX_draw(i, j, bgcolor);
-    }
-  }
-*/
-/* end rewrite */
 }
 
 void BOX_spawn(void)
