@@ -263,7 +263,7 @@ static const char PROGMEM BOX_reference[7][4][4] = {
 };
 
 //Variables
-unsigned char BOX_location[20];
+unsigned char BOX_location[array_size];
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
@@ -285,12 +285,8 @@ static const char PROGMEM message3[] = { "Game Over" };
 unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y)
 {
   //Calculate array index and shift amount
-  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
-  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-
-  //Make adjustment so that index is 0-7 and not 1-8
-  if (shift_index) shift_index -= 1;
-  else shift_index = 7;
+  unsigned char array_index_offset = ((Y)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y)%8;		//How much to shift for our bit mask
 
   if (BOX_location[X+array_index_offset] & 1<<shift_index) return 1;
   else return 0;
@@ -299,12 +295,8 @@ unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y)
 void BOX_loc_set_bit(unsigned char X, unsigned char Y)
 {
   //Calculate array index and shift amount
-  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
-  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-
-  //Make adjustment so that index is 0-7 and not 1-8
-  if (shift_index) shift_index -= 1;
-  else shift_index = 7;
+  unsigned char array_index_offset = ((Y)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y)%8;		//How much to shift for our bit mask
 
   BOX_location[X+array_index_offset] |= 1<<shift_index;
 }
@@ -312,12 +304,8 @@ void BOX_loc_set_bit(unsigned char X, unsigned char Y)
 void BOX_loc_clear_bit(unsigned char X, unsigned char Y)
 {
   //Calculate array index and shift amount
-  unsigned char array_index_offset = ((Y+1)/8)*(BOX_board_right+1);
-  unsigned char shift_index = (Y+1)%8;		//How much to shift for our bit mask
-
-  //Make adjustment so that index is 0-7 and not 1-8
-  if (shift_index) shift_index -= 1;
-  else shift_index = 7;
+  unsigned char array_index_offset = ((Y)/8)*(BOX_board_right+1);
+  unsigned char shift_index = (Y)%8;		//How much to shift for our bit mask
 
   BOX_location[X+array_index_offset] &= ~(1<<shift_index);
 }
@@ -515,6 +503,7 @@ void BOX_spawn(void)
   x_loc = 4;
   y_loc = 1;
   cur_piece = random_piece;
+  rotate = 0;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
 
@@ -695,7 +684,7 @@ void BOX_pregame(void)
 void BOX_start_game(void)
 {
   //Poplulate BOX_location[] with 0
-  for (unsigned char i=0; i<20; i++) { BOX_location[i] = 0x00; }
+  for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
   BOX_rewrite_display(blue, white);
   BOX_spawn();
 }
