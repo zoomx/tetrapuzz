@@ -500,7 +500,7 @@ void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
   for (unsigned char i=0; i<16; i++) LCD_Out(color,0);
 }
 
-void BOX_erase(unsigned char X, unsigned char Y, unsigned char color)
+void BOX_erase(unsigned char X, unsigned char Y)
 {
   LCD_Out(0x2A, 1); //Set Column location
   LCD_Out(X*4, 0);
@@ -509,7 +509,7 @@ void BOX_erase(unsigned char X, unsigned char Y, unsigned char color)
   LCD_Out(Y*4, 0);
   LCD_Out((Y*4)+3, 0);
   LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<16; i++) LCD_Out(white,0);
+  for (unsigned char i=0; i<16; i++) LCD_Out(default_bg_color,0);
 }
 
 void BOX_write_piece(void)  //Writes piece to display
@@ -521,11 +521,11 @@ void BOX_write_piece(void)  //Writes piece to display
     //prevent invalid indicies from being written
       if ((y_loc-j) >= BOX_board_top)
       {
-	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
-	{
-	  //TODO: change this for different colored playing pieces
-	  BOX_draw(x_loc+i, y_loc-j, default_fg_color);
-	}
+		if (BOX_piece[i] & 1<<j)
+		{
+		  //TODO: change this for different colored playing pieces
+		  BOX_draw(x_loc+i, y_loc-j, default_fg_color);
+		}
       }
     }
   }
@@ -540,11 +540,11 @@ void BOX_clear_piece(void)  //Clears piece from display
     //prevent invalid indices from being written
       if ((y_loc-j) >= BOX_board_top)
       {
-	if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
-	{
-	  //TODO: Change this for different bg colors on each level
-	  BOX_erase(x_loc+i, y_loc-j, default_bg_color);
-	}
+  		if (BOX_piece[i] & 1<<j)
+  		{
+  		  //TODO: change this for different colored playing pieces
+  		  BOX_erase(x_loc+i, y_loc-j);
+  		}
       }
     }
   }
