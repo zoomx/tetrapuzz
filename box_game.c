@@ -340,44 +340,18 @@ void BOX_store_loc(void)
       //Step through 4 rows
       for (unsigned char temp_row=0; temp_row<4; temp_row++)
       {
-	//Only if y_loc is not out of bounds
-	if (y_loc-temp_row <= BOX_board_bottom)
-	{
-	  if (BOX_piece[temp_col/2] & 1<<((4*(temp_col%2))+(3-temp_row)))	//Checks nibbles in Box_piece array
-	  {
-	    BOX_loc_set_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
-	  }
-	}
+		//Only if y_loc is not out of bounds
+		if (y_loc-temp_row <= BOX_board_bottom)
+		{
+		  if (BOX_piece[temp_col] & 1<<(temp_row))	//Checks nibbles in Box_piece array
+		  {
+			BOX_loc_set_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
+		  }
+		}
       }
     }
   }
 }
-
-/* code rewrite */
-/*
-void BOX_store_loc(void)		//Stores current x_loc & y_loc to array
-{
-  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
-  {
-    //if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    if (((unsigned char)(x_loc+i) >= BOX_board_left) && ((unsigned char)(x_loc+i) <= BOX_board_right))
-    {
-      for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
-      {
-      //prevent invalid indicies from being written
-	if (((y_loc-j) >= BOX_board_top) && ((y_loc-j) <= BOX_board_bottom))
-	{
-	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
-	  {
-	    BOX_location[(unsigned char)(x_loc+i)] |= 1<<(y_loc-j);
-	  }
-	}
-      }
-    }
-  }
-}
-*/
-/* end rewrite */
 
 void BOX_clear_loc(void)
 {
@@ -390,14 +364,14 @@ void BOX_clear_loc(void)
       //Step through 4 rows
       for (unsigned char temp_row=0; temp_row<4; temp_row++)
       {
-	//Only if y_loc is not out of bounds
-	if (y_loc-temp_row <= BOX_board_bottom)
-	{
-	  if (BOX_piece[temp_col/2] & 1<<((4*(temp_col%2))+(3-temp_row)))	//Checks nibbles in Box_piece array
-	  {
-	    BOX_loc_clear_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
-	  }
-	}
+		//Only if y_loc is not out of bounds
+		if (y_loc-temp_row <= BOX_board_bottom)
+		{
+		  if (BOX_piece[temp_col] & 1<<(temp_row))	//Checks nibbles in Box_piece array
+		  {
+			BOX_loc_clear_bit((unsigned char)(x_loc+temp_col),y_loc-temp_row);
+		  }
+		}
       }
     }
   }
@@ -608,21 +582,41 @@ void BOX_spawn(void)
 }
 
 //TODO: finish this development
-unsigned char BOX_check_rev2(signed char X_offset, signed char Y_offset)
+unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 {
-	unsigned char temp_area[2];
+	unsigned char temp_area[4] = { 0x00, 0x00, 0x00, 0x00 };
 	unsigned char i;
 	//Build compare mask in temp_area[]
-	//mask will be 4 sets of nibbles (2 bytes)
-    for (i=0; i<4; i++) { }//Column 1
-	//Column 2
-	//Column 3
-	//Column 4
+		BOX_clear_loc(); //Do not count current location as a conflict
+		//mask will be 4 sets of nibbles (2 bytes)
+		for (i=0; i<4; i++)
+		{
+			//if out of bounds on the x axis
+			if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i] = 0x0F;
+			else
+			{
+				for (unsigned char j=0; j<4; j++)
+				{
+					//if we're out of bounds on the y axis
+					if (((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) ||
+					   (BOX_loc_return_bit((unsigned char)(x_loc+X_offset+i),(unsigned char)(y_loc+Y_offset-j))))
+					{
+						temp_area[i] |= 1<<j;
+					}
+				}
+			}
+		}
+		BOX_store_loc(); //Restore the location we cleared earlier
 
-	//Subtract current piece location from compare mask
-
-	//Return a value
+	if ((temp_area[0] & BOX_piece[0]) | (temp_area[1] & BOX_piece[1]) | (temp_area[2] & BOX_piece[2]) | (temp_area[3] & BOX_piece[3]))
+	{
+		//Conflict has been found
+		return 1;
+	}
+	else return 0;
 }
+
+/*
 unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 {
   //Check to see if we overlap a piece or the side of the board
@@ -673,6 +667,7 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 
   return 0;
 }
+*/
 
 void BOX_line_check(void)
 {
