@@ -1,6 +1,6 @@
 #include <avr/pgmspace.h>
 
-//Note: top and left are depricated... get rid of them
+//Note: top and left are deprecated... get rid of them
 #define BOX_board_top		0
 #define BOX_board_left		0
 
