@@ -32,7 +32,7 @@ Program flow:
 
 
 /*********************************************
-* BOX_piece[] is a 4x4 represntation of      *
+* BOX_piece[] is a 4x4 representation of      *
 * the currently selected playing piece.      *
 * When a piece spawns its shape is           *
 * written to this array in four nibbles      *
@@ -263,7 +263,7 @@ static const char PROGMEM BOX_reference[7][4][4] = {
 };
 
 //Variables
-unsigned char BOX_location[array_size];
+unsigned char BOX_location[20];
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
 unsigned char rotate = 0;	//Index for piece rotation
@@ -376,32 +376,6 @@ void BOX_clear_loc(void)
     }
   }
 }
-
-/* code rewrite */
-/*
-void BOX_clear_loc(void)		//Stores current x_loc & y_loc to array
-{
-  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
-  {
-    //if ((x_loc+i) > BOX_board_right) return;  //Prevent invalid x_loc
-    if (((unsigned char)(x_loc+i) >= BOX_board_left) && ((unsigned char)(x_loc+i) <= BOX_board_right))
-    {
-      for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
-      {
-      //prevent invalid indicies from being written
-	if (((y_loc-j) >= BOX_board_top) && ((y_loc-j) <= BOX_board_bottom))
-	{
-	  if (BOX_piece[i/2] & 1<<((4*(i%2))+(3-j)))
-	  {
-	    BOX_location[(unsigned char)(x_loc+i)] &= ~(1<<(y_loc-j));
-	  }
-	}
-      }
-    }
-  }
-}
-*/
-/* end rewrite */
 
 void BOX_load_reference(unsigned char piece, unsigned char rotation)
 {
@@ -526,43 +500,32 @@ void BOX_clear_piece(void)  //Clears piece from display
 
 void BOX_rewrite_display(unsigned char fgcolor, unsigned char bgcolor)	//Rewrites entire playing area
 {
-  unsigned char array_depth = (BOX_board_bottom+1)/8;
-  if ((BOX_board_bottom+1)%8) ++array_depth;
-
-  //cycle through 8 row chunks
-  for (unsigned char row_chunk=0; row_chunk<array_depth; row_chunk++)
+  for (unsigned char cols=0; cols<=BOX_board_right; cols++)
   {
-    //cycle through columns
-    for (unsigned char temp_col=0; temp_col<=BOX_board_right; temp_col++)
-    {
-      //cycle through all rows in block
-      for (unsigned char temp_row=0; temp_row<8; temp_row++)	//We are working in 8 row chunks
-      {
-	//Make sure we're not out of bounds
-	if ((row_chunk*8)+temp_row <= BOX_board_bottom)
-	{
-	  if(BOX_loc_return_bit(temp_col,(row_chunk*8)+temp_row)) BOX_draw(temp_col,(row_chunk*8)+temp_row, fgcolor);
-	  else BOX_draw(temp_col,(row_chunk*8)+temp_row, bgcolor);
-	}
-      }
-    }
+	  for (unsigned char rows=0; rows<=BOX_board_bottom; rows++)
+	  {
+		  if(BOX_loc_return_bit(cols,rows)) BOX_draw(cols,rows,fgcolor);
+		  else BOX_erase(cols,rows);
+	  }
   }
 }
 
 void BOX_spawn(void)
 {
   x_loc = 4;
-  y_loc = 0;
+  y_loc = 3;
   cur_piece = random_piece;
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
 
   //calculate y_loc
-  for (unsigned char i=0; i<3; i++)
+  unsigned char i=3;
+  while (!((BOX_piece[0] | BOX_piece[1] | BOX_piece[2] | BOX_piece[3]) & 1<<i))
   {
-    if((BOX_piece[0] | BOX_piece[1]) & 0x11<<i) ++y_loc; //There is a box in the row, make sure we see it
+	  --y_loc;
   }
 
+ /*
   //Check to see if we've filled the screen
   for (unsigned char i=0; i<=y_loc; i++)
   {
@@ -576,12 +539,12 @@ void BOX_spawn(void)
       }
     }
   }
+*/
 
   BOX_store_loc(); //Store new location
   BOX_write_piece(); //draw piece
 }
 
-//TODO: finish this development
 unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 {
 	unsigned char temp_area[4] = { 0x00, 0x00, 0x00, 0x00 };
@@ -615,59 +578,6 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 	}
 	else return 0;
 }
-
-/*
-unsigned char BOX_check(signed char X_offset, signed char Y_offset)
-{
-  //Check to see if we overlap a piece or the side of the board
-  //Return 1 = there IS an overlap
-  //Return 0 = NO Overlap
-
-
-  //Check left
-  if (X_offset < 0)
-  {
-    if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc > BOX_board_right)) return 1;
-  }
-  //Check right
-  if (X_offset > 0)
-  {
-    if (((unsigned char)(x_loc+X_offset+3) > BOX_board_right) && (BOX_piece[1] & 0xF0)) return 1;
-    if (((unsigned char)(x_loc+X_offset+2) > BOX_board_right) && (BOX_piece[1] & 0x0F)) return 1;
-    if ((unsigned char)(x_loc+X_offset+1) > BOX_board_right) return 1;
-  }
-  //Check bottom
-  if (Y_offset > 0)
-  {
-    if (((y_loc == BOX_board_bottom) && ((BOX_piece[0] | BOX_piece[1]) & 0x88)) || ((y_loc-1 == BOX_board_bottom) && ((BOX_piece[0] |BOX_piece[1]) & 0x44))) return 1; //Do nothing if we're at the bottom already
-  }
-
-  //Get 4x4 grid area on playing board
-  BOX_clear_loc();	//Clear the current location so we don't get a false reading from it
-  unsigned char temp_area[2];
-  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
-  {
-    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
-    {
-      //Weed out edges, previous checks ensure we have not left the playing area with the piece.
-      if ((unsigned char)(x_loc+X_offset+i) < BOX_board_left) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off left: 0
-      else if ((unsigned char)(x_loc+X_offset+i) > BOX_board_right) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off right: 0
-      else if ((unsigned char)(y_loc+Y_offset-j) < BOX_board_top) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off top: 0
-      else if ((unsigned char)(y_loc+Y_offset-j) > BOX_board_bottom) temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//Off bottom: 0
-      //else if (BOX_location[(unsigned char)(x_loc+X_offset+i)] & 1<<((unsigned char)(y_loc+Y_offset-j))) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
-      else if (BOX_loc_return_bit((unsigned char)(x_loc+X_offset+i),(unsigned char)(y_loc+Y_offset-j)));
-      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//No Box: 0
-    }
-  }
-  BOX_store_loc();	//Store the current location that we cleared earlier
-
-  //Compare two arrays for overlaps
-  if ((BOX_piece[0] & temp_area[0]) || (BOX_piece[1] & temp_area[1])) return 1;
-
-
-  return 0;
-}
-*/
 
 void BOX_line_check(void)
 {
@@ -791,8 +701,8 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
-  //Poplulate BOX_location[] with 0b00000000
-  for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
+  //Poplulate BOX_location[] with 0
+  for (unsigned char i=0; i<20; i++) { BOX_location[i] = 0x00; }
   BOX_rewrite_display(blue, white);
   BOX_spawn();
 }
