@@ -2,6 +2,16 @@
 #include "3595_LCD.h"
 
 /*
+ * TODO: Fix 8-bit color in 3595_LCD.c (seems to be backwards??)
+ * 			http://en.wikipedia.org/wiki/8-bit_color
+ *
+ * TODO: Update line checking to work for new 4-byte pieces
+ *
+ * TODO: Clean this place up!
+ */
+
+
+/*
 Program flow:
   -Initialize
   -Spawn piece
@@ -507,21 +517,13 @@ void BOX_spawn(void)
 
   BOX_load_reference(cur_piece, rotate);  //load from reference
 
- /*
+
+
   //Check to see if we've filled the screen
-  for (unsigned char i=0; i<=y_loc; i++)
+  if (BOX_check(0,0))
   {
-    for (unsigned char j=0; j<4; j++)
-    {
-      if ((BOX_location[x_loc+j] & 1<<i)
-      && (BOX_piece[j%2] & 1<<((4*(j%2))+(3-i))))
-      {
-	BOX_end_game();
-	break;
-      }
-    }
+	  BOX_end_game();
   }
-*/
 
   BOX_store_loc(); //Store new location
   BOX_write_piece(); //draw piece
@@ -532,7 +534,10 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 	unsigned char temp_area[4] = { 0x00, 0x00, 0x00, 0x00 };
 	unsigned char i;
 	//Build compare mask in temp_area[]
-		BOX_clear_loc(); //Do not count current location as a conflict
+
+		//Clear the current piece from BOX_location[] so we don't have a false overlap
+			//Do this only if X_offset and Y_offset aren't both 0 (used for BOX_spawn)
+		if (X_offset || Y_offset) BOX_clear_loc();
 		//mask will be 4 sets of nibbles (2 bytes)
 		for (i=0; i<4; i++)
 		{
@@ -575,11 +580,13 @@ void BOX_line_check(void)
     unsigned char board_cols=0;
     while ((board_cols<=BOX_board_right) && (BOX_loc_return_bit(board_cols,board_rows)))
     {
-      if (board_cols == BOX_board_right) complete_lines[temp_index++] = board_rows; //Complete row found, record in complete_lines[]
-      ++board_cols;
+    	//Complete row found, record in complete_lines[]
+		if (board_cols == BOX_board_right) complete_lines[temp_index++] = board_rows;
+		++board_cols;
     }
   }
   if (temp_index == 0) return;  //No complete lines found, return
+
 
   //If there are complete rows
     //TODO: Disable interrupts to pause game flow
@@ -587,28 +594,78 @@ void BOX_line_check(void)
 
   //Rewrite BOX_location[] without completed rows.
   --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
-  unsigned char row_write_tracker = 0; //Tracks how many rows above the current row we are getting information from.
-  for (unsigned char i=0; i<=BOX_board_bottom; i++)
+
+  //Testing:
+
+  for (unsigned char i=0; i<=temp_index; i++)
   {
-    if (complete_lines[temp_index] == (BOX_board_bottom-i-row_write_tracker))
-    {
-      ++row_write_tracker;
-      if (temp_index > 0) --temp_index;
-    }
-    if (i+row_write_tracker > BOX_board_bottom)	//Clear with zeros if all rows have been shifted down
-    {
-      for (unsigned char j=0; j<=BOX_board_right; j++) BOX_loc_clear_bit(j, BOX_board_bottom-i);
-    }
-    else for (unsigned char j=0; j<=BOX_board_right; j++)
-    {
-      //if the bit in the row above the full row is 1, set that in the full row
-      if (BOX_loc_return_bit(j, BOX_board_bottom-i-row_write_tracker)) BOX_loc_set_bit(j, BOX_board_bottom-i);
-      //otherwise make sure that bit is cleared
-      else BOX_loc_clear_bit(j, BOX_board_bottom-i);
-    }
+	  BOX_draw(1,complete_lines[i],yellow);
+	  _delay_ms(1000);
   }
+
+  //end for testing
+
+  //Rewrite BOX_location[] data without completed lines
+  unsigned char read_from_row = BOX_board_bottom;
+  unsigned char write_to_row = BOX_board_bottom;
+
+  //When we have read from all rows, this will be set to 0 and
+  //remaining bits cleared from BOX_location[]
+  unsigned char rows_left_to_read = 1;
+
+  //Use variable i to iterate through every row of the board
+  //for (unsigned char i=0; i<=BOX_board_bottom; i++)
+  unsigned char i=0;
+  while (i <= BOX_board_bottom)
+  {
+	  //If the current row is a complete line
+	  if (read_from_row == complete_lines[temp_index])
+	  {
+		  //Decrement indexes
+		  if (read_from_row == 0)
+		  {
+			  rows_left_to_read = 0;
+
+			  //Change complete_lines[0] so we don't do this again
+			  complete_lines[0] = read_from_row + 1;
+		  }
+		  else
+		  {
+			  --read_from_row;
+			  if (temp_index) --temp_index;
+		  }
+	  }
+
+	  else
+	  {
+		  //Write data to all columns of current row
+		  for (unsigned char col=0; col<=BOX_board_right; col++)
+		  {
+			  //If there are rows left to read from, do so.
+			  if (rows_left_to_read)
+			  {
+				  if (BOX_loc_return_bit(col,read_from_row)) BOX_loc_set_bit(col, write_to_row);
+				  else BOX_loc_clear_bit(col, write_to_row);
+			  }
+			  //There are no rows left to read from, fill with 0
+			  else
+			  {
+				  BOX_loc_clear_bit(col, write_to_row);
+			  }
+		  }
+
+		  //A row has now been read from, decrement the counter
+		  --read_from_row;
+
+		  //A row has now been written to, increment the counter, decrement the tracker
+		  ++i;
+		  --write_to_row;
+	  }
+  }
+
   BOX_rewrite_display(blue, white);
 }
+
 
 void BOX_up(void)
 {
@@ -628,7 +685,7 @@ void BOX_dn(void)
   {
     //Set piece here and spawn a new one
     BOX_rewrite_display(blue, default_bg_color);
-//NOTE:testing    BOX_line_check();
+    BOX_line_check();
     BOX_spawn();
     return;
   }
@@ -677,8 +734,9 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
-  //Poplulate BOX_location[] with 0
+  //Populate BOX_location[] with 0
   for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
+
   BOX_rewrite_display(blue, white);
   BOX_spawn();
 }

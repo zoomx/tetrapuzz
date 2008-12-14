@@ -400,7 +400,11 @@
 <option id="de.innot.avreclipse.cppcompiler.option.debug.level.2006202741" name="Generate Debugging Info" superClass="de.innot.avreclipse.cppcompiler.option.debug.level" value="de.innot.avreclipse.cppcompiler.option.debug.level.none" valueType="enumerated"/>
 <option id="de.innot.avreclipse.cppcompiler.option.optimize.725619944" name="Optimization Level" superClass="de.innot.avreclipse.cppcompiler.option.optimize" value="de.innot.avreclipse.cppcompiler.optimize.size" valueType="enumerated"/>
 </tool>
-<tool id="de.innot.avreclipse.tool.linker.winavr.app.release.164837652" name="AVR C Linker" superClass="de.innot.avreclipse.tool.linker.winavr.app.release"/>
+<tool id="de.innot.avreclipse.tool.linker.winavr.app.release.164837652" name="AVR C Linker" superClass="de.innot.avreclipse.tool.linker.winavr.app.release">
+<option id="de.innot.avreclipse.linker.option.libs.506084873" name="Libraries (-l)" superClass="de.innot.avreclipse.linker.option.libs" valueType="libs">
+<listOptionValue builtIn="false" value="m"/>
+</option>
+</tool>
 <tool id="de.innot.avreclipse.tool.cpplinker.app.release.1281149055" name="AVR C++ Linker" superClass="de.innot.avreclipse.tool.cpplinker.app.release"/>
 <tool id="de.innot.avreclipse.tool.archiver.winavr.base.664947973" name="AVR Archiver" superClass="de.innot.avreclipse.tool.archiver.winavr.base"/>
 <tool id="de.innot.avreclipse.tool.objdump.winavr.app.release.1524027117" name="AVR Create Extended Listing" superClass="de.innot.avreclipse.tool.objdump.winavr.app.release"/>
