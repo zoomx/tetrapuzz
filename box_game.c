@@ -385,53 +385,36 @@ void BOX_load_reference(unsigned char piece, unsigned char rotation)
 
 void BOX_rotate(unsigned char direction)
 {
-  //TODO: Check if we are going to hit something when we rotate
-  //working area
+  //TODO: Allow for adjustments if rotation is prevented due to proximity
+
   BOX_clear_loc(); //Clear current location so we don't have false compares
 
   //Load in the candidate rotation
-  unsigned char new_position[2];
   unsigned char new_rotate = rotate;
   if (++new_rotate > 3) new_rotate = 0;
-  new_position[0] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2)));
-  new_position[1] = pgm_read_byte((char *)(BOX_reference + (cur_piece*8) + (new_rotate*2) + 1));
+  BOX_load_reference(cur_piece,new_rotate);
 
-
-  //check left
-  if ((new_position[0] & 0x0F) && (x_loc > BOX_board_right)) { BOX_store_loc(); return; }
-    //Find how much we need to go right to rotate
-    //Check this distance and move right if possible    //Find how much we need to go down to rotate
-  //check right
-  if ((new_position[1] & 0xF0) && (x_loc+3 > BOX_board_right)) { BOX_store_loc(); return; }
-  if ((new_position[1] & 0x0F) && (x_loc+2 > BOX_board_right)) { BOX_store_loc(); return; }
-    //Find how much we need to go down to rotate
-    //Check this distance and move left if possible
-  //check top
-    //Find how much we need to go down to rotate
-    //Check this distance below us and move down if possible
-  //check bottom
-  if (((new_position[0] | new_position[1]) & 0x44) && (y_loc > BOX_board_bottom)) { BOX_store_loc(); return; }
-    //if something is below us, too bad!
-
-  //Check if Rotation will hit another piece
-  unsigned char temp_area[2];
-  for (unsigned char i=0; i<4; i++)  //Step through each of 4 columns
+  //Check for overlaps
+  if (BOX_check(0, 0))
   {
-    for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
-    {
-      if (BOX_location[x_loc+i] & 1<<(y_loc-j)) temp_area[i/2] |= 1<<((4*(i%2))+(3-j)); 	//Box already here: 1
-      else temp_area[i/2] &= ~(1<<((4*(i%2))+(3-j)));	//No Box: 0
-    }
+	  //Overlap will be caused, restore piece settings and return
+	  BOX_load_reference(cur_piece, rotate);
+	  BOX_store_loc();
+	  return;
   }
-  if ((temp_area[0] & new_position[0]) || (temp_area[1] & new_position[1])) { BOX_store_loc(); return; }
+  //No overlap found, allow new rotation
+  else
+  {
+	  //Load the current rotation back in and clear the piece from display
+	  BOX_load_reference(cur_piece, rotate);
+	  BOX_clear_piece();
 
-
-  //Rotation will not cause an overlap or overflow and can proceed
-  BOX_clear_piece();
-  if (++rotate > 3) rotate = 0;
-  BOX_load_reference(cur_piece, rotate);
-  BOX_write_piece();
-  BOX_store_loc();
+	  //Load new rotation, display, and save its location
+	  rotate = new_rotate;
+	  BOX_load_reference(cur_piece, rotate);
+	  BOX_write_piece();
+	  BOX_store_loc();
+  }
 }
 
 void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
@@ -464,7 +447,7 @@ void BOX_write_piece(void)  //Writes piece to display
   {
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
-    //prevent invalid indicies from being written
+    //prevent invalid indices from being written
       if ((y_loc-j) >= BOX_board_top)
       {
 		if (BOX_piece[i] & 1<<j)
@@ -556,7 +539,7 @@ unsigned char BOX_check(signed char X_offset, signed char Y_offset)
 				}
 			}
 		}
-		BOX_store_loc(); //Restore the location we cleared earlier
+		if (X_offset || Y_offset) BOX_store_loc(); //Restore the location we cleared earlier
 
 	if ((temp_area[0] & BOX_piece[0]) | (temp_area[1] & BOX_piece[1]) | (temp_area[2] & BOX_piece[2]) | (temp_area[3] & BOX_piece[3]))
 	{
