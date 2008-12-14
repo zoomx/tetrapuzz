@@ -567,25 +567,19 @@ void BOX_line_check(void)
 
   //Check every line on the playing area for complete rows and record them in an array
   //TODO: make this work for more than 8 rows
-  unsigned char complete_lines[4];
-  unsigned char temp_index = 0;			//Index for complete_lines[]
-  for (unsigned char i=0; i<=BOX_board_bottom; i++)
+  unsigned char complete_lines[4];	//There will never be more than 4 complete rows
+  unsigned char temp_index = 0;		//Index for complete_lines[]
+
+  for (unsigned char board_rows=0; board_rows<=BOX_board_bottom; board_rows++)
   {
-    unsigned char j=0;
-    while ((j<=BOX_board_right) && (BOX_location[j] & 1<<i))
+    unsigned char board_cols=0;
+    while ((board_cols<=BOX_board_right) && (BOX_loc_return_bit(board_cols,board_rows)))
     {
-      if (j == BOX_board_right) complete_lines[temp_index++] = i; //Complete row found, record in complete_lines[]
-      ++j;
+      if (board_cols == BOX_board_right) complete_lines[temp_index++] = board_rows; //Complete row found, record in complete_lines[]
+      ++board_cols;
     }
   }
-  if (temp_index == 0) return;  //If no complete rows, return
-
-  /*
-  for (unsigned char i=0; i < temp_index; i++)
-  {
-    for (unsigned char j=0; j <= BOX_board_right; j++) BOX_draw(j, complete_lines[i], green);//Test to see if this works.
-  }
-  */
+  if (temp_index == 0) return;  //No complete lines found, return
 
   //If there are complete rows
     //TODO: Disable interrupts to pause game flow
@@ -603,14 +597,14 @@ void BOX_line_check(void)
     }
     if (i+row_write_tracker > BOX_board_bottom)	//Clear with zeros if all rows have been shifted down
     {
-      for (unsigned char j=0; j<=BOX_board_right; j++) BOX_location[j] &= ~(1<<(BOX_board_bottom-i));
+      for (unsigned char j=0; j<=BOX_board_right; j++) BOX_loc_clear_bit(j, BOX_board_bottom-i);
     }
     else for (unsigned char j=0; j<=BOX_board_right; j++)
     {
       //if the bit in the row above the full row is 1, set that in the full row
-      if (BOX_location[j] & 1<<(BOX_board_bottom-i-row_write_tracker)) BOX_location[j] |= 1<<(BOX_board_bottom-i);
-      //otherwise make sure that bit is unset
-      else BOX_location[j] &= ~(1<<(BOX_board_bottom-i));
+      if (BOX_loc_return_bit(j, BOX_board_bottom-i-row_write_tracker)) BOX_loc_set_bit(j, BOX_board_bottom-i);
+      //otherwise make sure that bit is cleared
+      else BOX_loc_clear_bit(j, BOX_board_bottom-i);
     }
   }
   BOX_rewrite_display(blue, white);
