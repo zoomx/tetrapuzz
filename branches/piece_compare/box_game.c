@@ -377,10 +377,10 @@ void BOX_clear_loc(void)
 
 void BOX_load_reference(unsigned char piece, unsigned char rotation)
 {
-	  BOX_piece[0] = pgm_read_byte((char *)&BOX_reference[piece][rotation][0]);
-	  BOX_piece[1] = pgm_read_byte((char *)&BOX_reference[piece][rotation][1]);
-	  BOX_piece[2] = pgm_read_byte((char *)&BOX_reference[piece][rotation][2]);
-	  BOX_piece[3] = pgm_read_byte((char *)&BOX_reference[piece][rotation][3]);
+	  BOX_piece[0] = pgm_read_byte(&BOX_reference[piece][rotation][0]);
+	  BOX_piece[1] = pgm_read_byte(&BOX_reference[piece][rotation][1]);
+	  BOX_piece[2] = pgm_read_byte(&BOX_reference[piece][rotation][2]);
+	  BOX_piece[3] = pgm_read_byte(&BOX_reference[piece][rotation][3]);
 }
 
 void BOX_rotate(unsigned char direction)
@@ -571,7 +571,6 @@ void BOX_line_check(void)
   //TODO: Tweak this to enable scoring
 
   //Check every line on the playing area for complete rows and record them in an array
-  //TODO: make this work for more than 8 rows
   unsigned char complete_lines[4];	//There will never be more than 4 complete rows
   unsigned char temp_index = 0;		//Index for complete_lines[]
 
@@ -595,16 +594,6 @@ void BOX_line_check(void)
   //Rewrite BOX_location[] without completed rows.
   --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
 
-  //Testing:
-
-  for (unsigned char i=0; i<=temp_index; i++)
-  {
-	  BOX_draw(1,complete_lines[i],yellow);
-	  _delay_ms(1000);
-  }
-
-  //end for testing
-
   //Rewrite BOX_location[] data without completed lines
   unsigned char read_from_row = BOX_board_bottom;
   unsigned char write_to_row = BOX_board_bottom;
@@ -614,7 +603,6 @@ void BOX_line_check(void)
   unsigned char rows_left_to_read = 1;
 
   //Use variable i to iterate through every row of the board
-  //for (unsigned char i=0; i<=BOX_board_bottom; i++)
   unsigned char i=0;
   while (i <= BOX_board_bottom)
   {
