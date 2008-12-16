@@ -285,6 +285,73 @@ static const char PROGMEM message3[] = { "Game Over" };
 
 //Functions
 
+/*******************************
+ * Display specific functions: *
+ *   Change these to suit      *
+ *   whatever display will     *
+ *   be used.                  *
+ *******************************/
+
+void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
+{
+  LCD_Out(0x2A, 1); //Set Column location
+  LCD_Out(X*4, 0);
+  LCD_Out((X*4)+3, 0);
+  LCD_Out(0x2B, 1); //Set Row location
+  LCD_Out(Y*4, 0);
+  LCD_Out((Y*4)+3, 0);
+  LCD_Out(0x2C, 1); //Write Data
+  for (unsigned char i=0; i<16; i++) LCD_Out(color,0);
+}
+
+void BOX_erase(unsigned char X, unsigned char Y)
+{
+  LCD_Out(0x2A, 1); //Set Column location
+  LCD_Out(X*4, 0);
+  LCD_Out((X*4)+3, 0);
+  LCD_Out(0x2B, 1); //Set Row location
+  LCD_Out(Y*4, 0);
+  LCD_Out((Y*4)+3, 0);
+  LCD_Out(0x2C, 1); //Write Data
+  for (unsigned char i=0; i<16; i++) LCD_Out(default_bg_color,0);
+}
+
+void BOX_pregame(void)
+{
+  LCD_Fill_Screen(yellow);
+
+  cursor_x = 18;
+  cursor_y = 9;
+  LCD_Write_String_P(message1,green,yellow);
+
+  cursor_x = 6;
+  cursor_y = 20;
+  LCD_Write_String_P(message2,black,yellow);
+}
+
+void BOX_start_game(void)
+{
+  //Populate BOX_location[] with 0
+  for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
+
+  BOX_rewrite_display(blue, white);
+  BOX_spawn();
+}
+
+void BOX_end_game(void)
+{
+  TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
+  BOX_rewrite_display(black,red);
+  cursor_x = 24;
+  cursor_y = 29;
+  LCD_Write_String_P(message3,white,black);
+  while(1) { }
+}
+
+/**********************************
+ * End Display specific functions *
+ **********************************/
+
 /**********************************************
  * Functions that handle bits in BOX_location[]
  * BOX_loc_return_bit
@@ -417,29 +484,7 @@ void BOX_rotate(unsigned char direction)
   }
 }
 
-void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
-{
-  LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*4, 0);
-  LCD_Out((X*4)+3, 0);
-  LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*4, 0);
-  LCD_Out((Y*4)+3, 0);
-  LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<16; i++) LCD_Out(color,0);
-}
 
-void BOX_erase(unsigned char X, unsigned char Y)
-{
-  LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*4, 0);
-  LCD_Out((X*4)+3, 0);
-  LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*4, 0);
-  LCD_Out((Y*4)+3, 0);
-  LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<16; i++) LCD_Out(default_bg_color,0);
-}
 
 void BOX_write_piece(void)  //Writes piece to display
 {
