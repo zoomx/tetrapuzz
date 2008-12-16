@@ -1,5 +1,6 @@
 #include "box_game.h"
-#include "3595_LCD.h"
+#include "KS0108.h"
+#include <util/delay.h>
 
 /*
  * TODO: Fix 8-bit color in 3595_LCD.c (seems to be backwards??)
@@ -292,41 +293,93 @@ static const char PROGMEM message3[] = { "Game Over" };
  *   be used.                  *
  *******************************/
 
+void GLCD_box_draw(unsigned char x, unsigned char y,unsigned char color)
+{
+  y = 19-y;
+  GLCD_GoTo(y, x/2);
+  for (unsigned char i=0; i<4; i++)
+  {
+	  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
+	  if (x%2)
+	  {
+		  if (BOX_loc_return_bit(x-1,y)) GLCD_WriteData(0xFF);
+		  else GLCD_WriteData(0x0F);
+	  }
+	  else
+	  {
+		  if (BOX_loc_return_bit(x+1,y)) GLCD_WriteData(0xFF);
+		  else GLCD_WriteData(0xF0);
+	  }
+  }
+}
+
 void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 {
-  LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*4, 0);
-  LCD_Out((X*4)+3, 0);
-  LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*4, 0);
-  LCD_Out((Y*4)+3, 0);
-  LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<16; i++) LCD_Out(color,0);
+	  unsigned char temp_data;
+	  if (X%2)
+	  {
+		  if (BOX_loc_return_bit(X-1,Y)) temp_data = 0xFF;
+		  else temp_data = 0x0F;
+	  }
+	  else
+	  {
+		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0xFF;
+		  else temp_data = 0xF0;
+	  }
+	  Y = (19*4)-(Y*4);
+	  GLCD_GoTo(Y, X/2);
+	  for (unsigned char i=0; i<4; i++)
+	  {
+		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
+		  GLCD_WriteData(temp_data);
+	  }
 }
 
 void BOX_erase(unsigned char X, unsigned char Y)
 {
-  LCD_Out(0x2A, 1); //Set Column location
-  LCD_Out(X*4, 0);
-  LCD_Out((X*4)+3, 0);
-  LCD_Out(0x2B, 1); //Set Row location
-  LCD_Out(Y*4, 0);
-  LCD_Out((Y*4)+3, 0);
-  LCD_Out(0x2C, 1); //Write Data
-  for (unsigned char i=0; i<16; i++) LCD_Out(default_bg_color,0);
+	  unsigned char temp_data;
+	  if (X%2)
+	  {
+		  if (BOX_loc_return_bit(X-1,Y)) temp_data = 0xF0;
+		  else temp_data = 0x00;
+	  }
+	  else
+	  {
+		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0x0F;
+		  else temp_data = 0x00;
+	  }
+	  Y = (19*4)-(Y*4);
+	  GLCD_GoTo(Y, X/2);
+	  for (unsigned char i=0; i<4; i++)
+	  {
+		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
+		  GLCD_WriteData(temp_data);
+	  }
 }
 
 void BOX_pregame(void)
 {
-  LCD_Fill_Screen(yellow);
 
-  cursor_x = 18;
-  cursor_y = 9;
-  LCD_Write_String_P(message1,green,yellow);
+  GLCD_Initalize();
 
-  cursor_x = 6;
-  cursor_y = 20;
-  LCD_Write_String_P(message2,black,yellow);
+  GLCD_ClearScreen();
+
+  for (unsigned char i=0; i<16; i++)
+  {
+    BOX_draw(5,i,1);
+    _delay_ms(500);
+  }
+
+
+  //LCD_Fill_Screen(yellow);
+
+  //cursor_x = 18;
+  //cursor_y = 9;
+  //LCD_Write_String_P(message1,green,yellow);
+
+  //cursor_x = 6;
+  //cursor_y = 20;
+  //LCD_Write_String_P(message2,black,yellow);
 }
 
 void BOX_start_game(void)
@@ -334,17 +387,17 @@ void BOX_start_game(void)
   //Populate BOX_location[] with 0
   for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
 
-  BOX_rewrite_display(blue, white);
+  BOX_rewrite_display(black, white);
   BOX_spawn();
 }
 
 void BOX_end_game(void)
 {
   TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
-  BOX_rewrite_display(black,red);
-  cursor_x = 24;
-  cursor_y = 29;
-  LCD_Write_String_P(message3,white,black);
+  BOX_rewrite_display(white,black);
+  //cursor_x = 24;
+  //cursor_y = 29;
+  //LCD_Write_String_P(message3,white,black);
   while(1) { }
 }
 
@@ -679,7 +732,7 @@ void BOX_line_check(void)
 	  }
   }
 
-  BOX_rewrite_display(blue, white);
+  BOX_rewrite_display(black, white);
 }
 
 
@@ -700,7 +753,7 @@ void BOX_dn(void)
   if (BOX_check(0, 1))
   {
     //Set piece here and spawn a new one
-    BOX_rewrite_display(blue, default_bg_color);
+    BOX_rewrite_display(black, default_bg_color);
     BOX_line_check();
     BOX_spawn();
     return;
@@ -733,36 +786,4 @@ void BOX_rt(void)
   ++x_loc;
   BOX_write_piece();
   BOX_store_loc();
-}
-
-void BOX_pregame(void)
-{
-  LCD_Fill_Screen(yellow);
-
-  cursor_x = 18;
-  cursor_y = 9;
-  LCD_Write_String_P(message1,green,yellow);
-
-  cursor_x = 6;
-  cursor_y = 20;
-  LCD_Write_String_P(message2,black,yellow);
-}
-
-void BOX_start_game(void)
-{
-  //Populate BOX_location[] with 0
-  for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
-
-  BOX_rewrite_display(blue, white);
-  BOX_spawn();
-}
-
-void BOX_end_game(void)
-{
-  TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
-  BOX_rewrite_display(black,red);
-  cursor_x = 24;
-  cursor_y = 29;
-  LCD_Write_String_P(message3,white,black);
-  while(1) { }
 }
