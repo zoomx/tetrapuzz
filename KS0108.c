@@ -79,7 +79,8 @@ tmp = GLCD_ReadData();
 GLCD_GoTo(x, (y / 8));
 tmp = GLCD_ReadData();
 GLCD_GoTo(x, (y / 8));
-tmp |= (1 << (y % 8));
+if (color) tmp |= (1 << (y % 8));
+else tmp &= ~(1<< (y % 8));
 GLCD_WriteData(tmp);
 }
 //-------------------------------------------------------------------------------------------------

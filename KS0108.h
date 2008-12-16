@@ -10,8 +10,8 @@
 #define OFF	0x00
 #define DISPLAY_STATUS_BUSY	0x80
 
-#define white 0
-#define black 1
+#define white 1
+#define black 0
 
 void GLCD_Initalize(void);
 void GLCD_WriteData(unsigned char);
@@ -22,7 +22,7 @@ void GLCD_WriteString(char *);
 unsigned char GLCD_ReadByteFromROMMemory(char *);
 unsigned char GLCD_ReadData(void);
 void GLCD_Bitmap(char *, unsigned char, unsigned char, unsigned char, unsigned char);
-
+void GLCD_SetPixel(unsigned char x, unsigned char y, unsigned char color);
 
 
 
