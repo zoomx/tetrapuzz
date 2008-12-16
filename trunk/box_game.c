@@ -479,8 +479,9 @@ void BOX_rotate(unsigned char direction)
 	  //Load new rotation, display, and save its location
 	  rotate = new_rotate;
 	  BOX_load_reference(cur_piece, rotate);
-	  BOX_write_piece();
+
 	  BOX_store_loc();
+	  BOX_write_piece();
   }
 }
 
@@ -553,8 +554,10 @@ void BOX_spawn(void)
 	  BOX_end_game();
   }
 
+
   BOX_store_loc(); //Store new location
   BOX_write_piece(); //draw piece
+
 }
 
 unsigned char BOX_check(signed char X_offset, signed char Y_offset)
@@ -709,8 +712,9 @@ void BOX_dn(void)
   BOX_clear_loc();
   BOX_clear_piece();
   ++y_loc;
-  BOX_write_piece();
+
   BOX_store_loc();
+  BOX_write_piece();
 }
 
 void BOX_lt(void)
@@ -721,8 +725,9 @@ void BOX_lt(void)
   BOX_clear_loc();
   BOX_clear_piece();
   x_loc--;
-  BOX_write_piece();
+
   BOX_store_loc();
+  BOX_write_piece();
 }
 
 void BOX_rt(void)
@@ -731,8 +736,9 @@ void BOX_rt(void)
   BOX_clear_loc();
   BOX_clear_piece();
   ++x_loc;
-  BOX_write_piece();
+
   BOX_store_loc();
+  BOX_write_piece();
 }
 
 void BOX_pregame(void)
