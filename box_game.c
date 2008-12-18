@@ -693,7 +693,7 @@ void BOX_line_check(void)
 			  rows_left_to_read = 0;
 
 			  //Change complete_lines[0] so we don't do this again
-			  complete_lines[0] = read_from_row + 1;
+			  complete_lines[0] = BOX_board_bottom;
 		  }
 		  else
 		  {
