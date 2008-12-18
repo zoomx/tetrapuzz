@@ -293,26 +293,6 @@ static const char PROGMEM message3[] = { "Game Over" };
  *   be used.                  *
  *******************************/
 
-void GLCD_box_draw(unsigned char x, unsigned char y,unsigned char color)
-{
-  y = 19-y;
-  GLCD_GoTo(y, x/2);
-  for (unsigned char i=0; i<4; i++)
-  {
-	  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
-	  if (x%2)
-	  {
-		  if (BOX_loc_return_bit(x-1,y)) GLCD_WriteData(0xFF);
-		  else GLCD_WriteData(0x0F);
-	  }
-	  else
-	  {
-		  if (BOX_loc_return_bit(x+1,y)) GLCD_WriteData(0xFF);
-		  else GLCD_WriteData(0xF0);
-	  }
-  }
-}
-
 void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 {
 	  unsigned char temp_data;
@@ -327,7 +307,7 @@ void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 		  else temp_data = 0x0F;
 	  }
 	  Y = (19*4)-(Y*4);
-	  GLCD_GoTo(Y, X/2);
+	  GLCD_GoTo(Y+8, (X/2)+1);
 	  for (unsigned char i=0; i<4; i++)
 	  {
 		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
@@ -349,7 +329,7 @@ void BOX_erase(unsigned char X, unsigned char Y)
 		  else temp_data = 0x00;
 	  }
 	  Y = (19*4)-(Y*4);
-	  GLCD_GoTo(Y, X/2);
+	  GLCD_GoTo(Y+8, (X/2)+1);
 	  for (unsigned char i=0; i<4; i++)
 	  {
 		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
@@ -380,6 +360,78 @@ void BOX_start_game(void)
 {
   //Populate BOX_location[] with 0
   for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
+
+  //Draw frame around playing area
+
+  //Page 0
+  unsigned char i;
+  GLCD_GoTo(0,0);
+  for (i=0; i<3; i++)
+  {
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0x55);
+  }
+  GLCD_WriteData(0xAA);
+  for (i=0; i<41; i++)
+  {
+	  GLCD_WriteData(0xD5);
+	  GLCD_WriteData(0xAA);
+  }
+  for (i=0; i<19; i++)
+  {
+	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0xAA);
+  }
+  GLCD_WriteData(0x55);
+
+  //Page 1-5
+  for (unsigned char j=1; j<6; j++)
+  {
+	  GLCD_GoTo(0,j);
+	  for (i=0; i<3; i++)
+	  {
+		  GLCD_WriteData(0xAA);
+		  GLCD_WriteData(0x55);
+	  }
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0xFF);
+	  GLCD_GoTo(88,j);
+	  GLCD_WriteData(0xFF);
+	  for (i=0; i<19; i++)
+	  {
+		  GLCD_WriteData(0x55);
+		  GLCD_WriteData(0xAA);
+	  }
+	  GLCD_WriteData(0x55);
+  }
+
+  //Page 6
+  GLCD_GoTo(0,6);
+  for (i=0; i<3; i++)
+  {
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0x55);
+  }
+  GLCD_WriteData(0xAA);
+  for (i=0; i<41; i++)
+  {
+	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0xAB);
+  }
+  for (i=0; i<19; i++)
+  {
+	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0xAA);
+  }
+  GLCD_WriteData(0x55);
+
+  //Page 7
+  GLCD_GoTo(0,7);
+  for (i=0; i<64; i++)
+  {
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0x55);
+  }
 
   BOX_rewrite_display(black, white);
   BOX_spawn();

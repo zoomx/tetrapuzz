@@ -4,7 +4,7 @@
 #define BOX_board_top		0
 #define BOX_board_left		0
 
-#define BOX_board_bottom	15
+#define BOX_board_bottom	19
 #define BOX_board_right		9
 
 #define array_size (((BOX_board_bottom+8)/8) * (BOX_board_right + 1))
