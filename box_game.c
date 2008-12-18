@@ -319,12 +319,12 @@ void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 	  if (X%2)
 	  {
 		  if (BOX_loc_return_bit(X-1,Y)) temp_data = 0xFF;
-		  else temp_data = 0x0F;
+		  else temp_data = 0xF0;
 	  }
 	  else
 	  {
 		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0xFF;
-		  else temp_data = 0xF0;
+		  else temp_data = 0x0F;
 	  }
 	  Y = (19*4)-(Y*4);
 	  GLCD_GoTo(Y, X/2);
@@ -340,12 +340,12 @@ void BOX_erase(unsigned char X, unsigned char Y)
 	  unsigned char temp_data;
 	  if (X%2)
 	  {
-		  if (BOX_loc_return_bit(X-1,Y)) temp_data = 0xF0;
+		  if (BOX_loc_return_bit(X-1,Y)) temp_data = 0x0F;
 		  else temp_data = 0x00;
 	  }
 	  else
 	  {
-		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0x0F;
+		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0xF0;
 		  else temp_data = 0x00;
 	  }
 	  Y = (19*4)-(Y*4);
@@ -363,12 +363,6 @@ void BOX_pregame(void)
   GLCD_Initalize();
 
   GLCD_ClearScreen();
-
-  for (unsigned char i=0; i<16; i++)
-  {
-    BOX_draw(5,i,1);
-    _delay_ms(500);
-  }
 
 
   //LCD_Fill_Screen(yellow);
