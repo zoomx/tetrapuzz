@@ -494,7 +494,7 @@ void BOX_write_piece(void)  //Writes piece to display
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
     //prevent invalid indices from being written
-      if ((y_loc-j) >= BOX_board_top)
+      if ((y_loc-j) >= 0)
       {
 		if (BOX_piece[i] & 1<<j)
 		{
@@ -513,7 +513,7 @@ void BOX_clear_piece(void)  //Clears piece from display
     for (unsigned char j=0; j<4; j++) //Step through each of 4 rows
     {
     //prevent invalid indices from being written
-      if ((y_loc-j) >= BOX_board_top)
+      if ((y_loc-j) >= 0)
       {
   		if (BOX_piece[i] & 1<<j)
   		{
@@ -720,7 +720,7 @@ void BOX_dn(void)
 void BOX_lt(void)
 {
   if (BOX_check(-1, 0)) return; //Do nothing if moving causes an overlap
-  //if (((x_loc == BOX_board_left) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
+  //if (((x_loc == 0) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
   //if (BOX_location[x_loc-1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
