@@ -293,6 +293,15 @@ static const char PROGMEM message3[] = { "Game Over" };
  *   be used.                  *
  *******************************/
 
+void GLCD_string_sideways(char * str,unsigned char array_length)
+{
+	//TODO: Implement a system to write strings sideways on glcd
+	for (unsigned char i=0; i<array_length-1; i++)
+	{
+		GLCD_WriteChar(pgm_read_byte(str+i));
+	}
+}
+
 void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 {
 	  unsigned char temp_data;
@@ -344,7 +353,8 @@ void BOX_pregame(void)
 
   GLCD_ClearScreen();
 
-
+  GLCD_GoTo(40,4);
+  GLCD_string_sideways((char *)message1, (sizeof(message1) / sizeof(message1[0])));
   //LCD_Fill_Screen(yellow);
 
   //cursor_x = 18;
