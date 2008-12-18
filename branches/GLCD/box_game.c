@@ -6,8 +6,6 @@
  * TODO: Fix 8-bit color in 3595_LCD.c (seems to be backwards??)
  * 			http://en.wikipedia.org/wiki/8-bit_color
  *
- * TODO: Update line checking to work for new 4-byte pieces
- *
  * TODO: Clean this place up!
  */
 
@@ -22,35 +20,26 @@ Program flow:
   -Wait for game input
 */
 
-/**BOX_location[] Array*********************
-* Used to track where boxes are in the     *
-* playing area.  One byte per column with  *
-* byte0 as the left column.  One bit per   *
-* row with the LSB at the top.  This makes *
-* for a 12x8 playing area                  *
+/**BOX_location[] Array********************
+* Used to track where boxes are in the    *
+* playing area.  One byte per column with *
+* byte0 as the left column.  One bit per  *
+* row with the LSB at the top.  If there  *
+* are more than 8 rows, the array will be *
+* Increased by BOX_board_right+1 bytes to *
+* accomodate 8 more rows as needed.       *
 *******************************************/
 
-//TODO: make this scaleable
-/*
-    This can be scaled and still keep it a 1 dimensional array.
-    We can use BOX_board_bottom and BOX_board_right to calculate
-    where in the array data will be stored.
-
-    This should be useful somehow:
-      BOX_location[((x_loc%BOX_board_right)*BOX_board_rigth)+BOX_board_right)]
-
-*/
-
-
-/*********************************************
-* BOX_piece[] is a 4x4 representation of      *
-* the currently selected playing piece.      *
-* When a piece spawns its shape is           *
-* written to this array in four nibbles      *
-* Byte0,LSN; Byte0,MSN; Byte1,LSN; Byte1,MSN *
-* The LSB of each nibble is the top of       *
-* the display area.                          *
-*********************************************/
+/*****************************************
+* BOX_piece[] is a 4x4 representation of *
+* the currently selected playing piece.  *
+* When a piece spawns its shape is       *
+* written to this array in the least     *
+* significant nibble of each byte:       *
+* Byte0= left, Byte3= right		         *
+* The LSB of each nibble is the top of   *
+* the display area.                      *
+******************************************/
 
 unsigned char BOX_piece[4];
 
@@ -829,8 +818,6 @@ void BOX_dn(void)
 void BOX_lt(void)
 {
   if (BOX_check(-1, 0)) return; //Do nothing if moving causes an overlap
-  //if (((x_loc == 0) && (BOX_piece[0] & 0x0F)) || (x_loc == 255)) return; //Do nothing if we're at the left edge already
-  //if (BOX_location[x_loc-1] & 1<<y_loc) return; //Do nothing if there is a box beside us
   BOX_clear_loc();
   BOX_clear_piece();
   x_loc--;
