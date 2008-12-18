@@ -1,5 +1,6 @@
 #include "box_game.h"
 #include "KS0108.h"
+#include "font5x8.h"
 #include <util/delay.h>
 
 /*
@@ -282,12 +283,54 @@ static const char PROGMEM message3[] = { "Game Over" };
  *   be used.                  *
  *******************************/
 
-void GLCD_string_sideways(char * str,unsigned char array_length)
+void GLCD_string_sideways(unsigned char X, unsigned char Y, const char * str,unsigned char array_length)
 {
-	//TODO: Implement a system to write strings sideways on glcd
-	for (unsigned char i=0; i<array_length-1; i++)
+	//TODO: Move this to the GLCD library
+
+	//Loop through each char in array
+	unsigned char temp_array[7]; //Array to store character data
+	unsigned char tot_cols = (array_length-1) * 6;
+	unsigned char temp_index = 0; //Will track each column (5 per char + space) in array
+	unsigned char current_char; //Keeps track of what char to draw right now
+	unsigned char char_column_info; //Stores data read in from font5x8.h
+	while (temp_index <= tot_cols)
 	{
-		GLCD_WriteChar(pgm_read_byte(str+i));
+	  //Write each column of all 7 chars in temp_array[] including spaces
+	  for (unsigned char i=0; i<8; i++)
+	  {
+		  unsigned char read_column = temp_index % 6;
+		  if (read_column) //We should be writing char data to a column
+		  {
+			  --read_column;
+			  if (temp_index > tot_cols) current_char = ' '; //Fill with spaces when we run out of chars
+			  else current_char = pgm_read_byte(str+(temp_index/6)); //Get which char we are currently writing
+			  current_char -= 32; //Adjust to match the font5x8.h array
+
+			  char_column_info = pgm_read_byte((char *)((int)font5x8 + (5 * current_char) + read_column)); //Read column in from font5x8.h
+			  //GLCD_GoTo(10,0);
+			  //GLCD_WriteData(char_column_info);
+			  //while(1) { ;; }
+			  for (unsigned char j=0; j<7; j++)
+			  {
+				  if (char_column_info & (1<<(6-j))) temp_array[j] |= 1<<i;
+				  else temp_array[j] &= ~(1<<i);
+			  }
+		  }
+		  else //We are currently writing a space after a char to a column
+		  {
+			  for (unsigned char j=0; j<7; j++)
+			  {
+				  temp_array[j] &= ~(1<<i);
+			  }
+		  }
+		  ++temp_index; //We have written a column, increment the index
+
+
+	  }
+	  //Now display the data we have just stored
+	  GLCD_GoTo(Y,X);
+	  ++X;
+	  for (unsigned char i=0; i<7; i++) GLCD_WriteData(temp_array[i]);
 	}
 }
 
@@ -343,7 +386,7 @@ void BOX_pregame(void)
   GLCD_ClearScreen();
 
   GLCD_GoTo(40,4);
-  GLCD_string_sideways((char *)message1, (sizeof(message1) / sizeof(message1[0])));
+  GLCD_string_sideways(0,20,(char *)message1, (sizeof(message1) / sizeof(message1[0])));
   //LCD_Fill_Screen(yellow);
 
   //cursor_x = 18;
