@@ -15,6 +15,7 @@
 
 void GLCD_Initalize(void);
 void GLCD_WriteData(unsigned char);
+void GLCD_WriteChar(char charToWrite);
 void GLCD_WriteCommand(unsigned char, unsigned char);
 void GLCD_ClearScreen(void);
 void GLCD_GoTo(unsigned char, unsigned char);
