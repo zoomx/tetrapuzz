@@ -1,7 +1,7 @@
 #include <avr/pgmspace.h>
 
-#define BOX_board_bottom	19
-#define BOX_board_right		9
+#define BOX_board_bottom	21
+#define BOX_board_right		11
 
 #define array_size (((BOX_board_bottom+8)/8) * (BOX_board_right + 1))
 

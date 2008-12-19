@@ -275,6 +275,7 @@ static const char PROGMEM message1[] = { "Tetrapuzz!" };
 static const char PROGMEM message2[] = { "click to"} ;
 static const char PROGMEM message3[] = { "start" };
 static const char PROGMEM message4[] = { "Game Over" };
+static const char PROGMEM message5[] = { "Lines:" };
 
 //Functions
 
@@ -353,11 +354,10 @@ void BOX_draw(unsigned char X, unsigned char Y, unsigned char color)
 		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0xFF;
 		  else temp_data = 0x0F;
 	  }
-	  Y = (19*4)-(Y*4);
+	  Y = (BOX_board_bottom*4)-(Y*4);
 	  GLCD_GoTo(Y+8, (X/2)+1);
 	  for (unsigned char i=0; i<4; i++)
 	  {
-		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
 		  GLCD_WriteData(temp_data);
 	  }
 }
@@ -375,11 +375,10 @@ void BOX_erase(unsigned char X, unsigned char Y)
 		  if (BOX_loc_return_bit(X+1,Y)) temp_data = 0xF0;
 		  else temp_data = 0x00;
 	  }
-	  Y = (19*4)-(Y*4);
+	  Y = (BOX_board_bottom*4)-(Y*4);
 	  GLCD_GoTo(Y+8, (X/2)+1);
 	  for (unsigned char i=0; i<4; i++)
 	  {
-		  //GLCD_SetPixel((y*6)+j,(x*6)+i,color);
 		  GLCD_WriteData(temp_data);
 	  }
 }
@@ -399,7 +398,7 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
-  score = 0; //Reset score
+
   //Populate BOX_location[] with 0
   for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
 
@@ -408,26 +407,36 @@ void BOX_start_game(void)
   //Page 0
   unsigned char i;
   GLCD_GoTo(0,0);
-  for (i=0; i<3; i++)
+  for (i=0; i<3; i++) 		//0-5
   {
 	  GLCD_WriteData(0xAA);
 	  GLCD_WriteData(0x55);
   }
-  GLCD_WriteData(0xAA);
-  for (i=0; i<41; i++)
+  GLCD_WriteData(0xAA); 	//6
+  for (i=0; i<45; i++) 		//7-97
   {
 	  GLCD_WriteData(0xD5);
 	  GLCD_WriteData(0xAA);
   }
-  for (i=0; i<19; i++)
+  for (i=0; i<5; i++)		//98-106
   {
 	  GLCD_WriteData(0x55);
 	  GLCD_WriteData(0xAA);
   }
-  GLCD_WriteData(0x55);
+  GLCD_WriteData(0x55);		//107
+  for (i=0; i<5; i++)		//108-118
+  {
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0xD5);
+  }
+  for (i=0; i<5; i++)		//119-127
+  {
+	  GLCD_WriteData(0xAA);
+	  GLCD_WriteData(0x55);
+  }
 
-  //Page 1-5
-  for (unsigned char j=1; j<6; j++)
+  //Page 1-6
+  for (unsigned char j=1; j<7; j++)
   {
 	  GLCD_GoTo(0,j);
 	  for (i=0; i<3; i++)
@@ -437,43 +446,62 @@ void BOX_start_game(void)
 	  }
 	  GLCD_WriteData(0xAA);
 	  GLCD_WriteData(0xFF);
-	  GLCD_GoTo(88,j);
+	  GLCD_GoTo(96,j);
 	  GLCD_WriteData(0xFF);
-	  for (i=0; i<19; i++)
+	  for (i=0; i<5; i++)
 	  {
 		  GLCD_WriteData(0x55);
 		  GLCD_WriteData(0xAA);
 	  }
 	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0xFF);
+	  GLCD_GoTo(118,j);
+	  GLCD_WriteData(0xFF);
+	  for (i=0; i<7; i++)		//119-127
+	  {
+		  GLCD_WriteData(0x55);
+		  GLCD_WriteData(0xAA);
+	  }
   }
 
-  //Page 6
-  GLCD_GoTo(0,6);
-  for (i=0; i<3; i++)
+  //Page 7
+  GLCD_GoTo(0,7);
+  for (i=0; i<3; i++)			//0-5
   {
 	  GLCD_WriteData(0xAA);
 	  GLCD_WriteData(0x55);
   }
-  GLCD_WriteData(0xAA);
-  for (i=0; i<41; i++)
+  GLCD_WriteData(0xAA);			//6
+  for (i=0; i<45; i++)			//7-96
   {
 	  GLCD_WriteData(0x55);
 	  GLCD_WriteData(0xAB);
   }
-  for (i=0; i<19; i++)
+  for (i=0; i<5; i++)			//97-108
   {
 	  GLCD_WriteData(0x55);
 	  GLCD_WriteData(0xAA);
   }
   GLCD_WriteData(0x55);
-
-  //Page 7
-  GLCD_GoTo(0,7);
-  for (i=0; i<64; i++)
+  GLCD_WriteData(0xBF);			//109
+  for (i=0; i<4; i++)			//110-117
   {
-	  GLCD_WriteData(0xAA);
-	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0x50);
+	  GLCD_WriteData(0xB0);
   }
+  GLCD_WriteData(0x50);			//118
+  GLCD_WriteData(0xBF);			//119
+  for (i=0; i<4; i++)			//109-126
+  {
+	  GLCD_WriteData(0x55);
+	  GLCD_WriteData(0xAA);
+  }
+  GLCD_WriteData(0x55);			//127
+
+
+  score = 0; //Reset score
+  GLCD_string_sideways(1,110, (char *)message5, (sizeof(message5) / sizeof(message5[0])));
+  BOX_update_score();
 
   BOX_rewrite_display(black, white);
   BOX_spawn();
@@ -489,9 +517,59 @@ void BOX_end_game(void)
   while(1) { }
 }
 
-void BOX_update_score(void)
+void BOX_update_score(void)  //TODO: horrible hack --- clean this up!
 {
 	//Update the score on the display
+	unsigned char score_array[14];
+	unsigned char tens = score/10;
+	unsigned char ones = score%10;
+	unsigned char char_column_info;
+	tens += 16; //Adjustment for font5x8.h
+	ones += 16; //Adjustment for font5x8.h
+
+	//Preload the background data to make this look pretty
+	for (unsigned char i=0; i<4; i++)
+	{
+		score_array[(i*2)+7] = 0b10110000;
+	    score_array[(i*2)+8] = 0b01010000;
+	}
+
+
+
+	for (unsigned char i=0; i<5; i++)
+	{
+		char_column_info = pgm_read_byte((char *)((int)font5x8 + (5 * tens) + i)); //Read column in from font5x8.h
+		for (unsigned char j=0; j<7; j++)
+		{
+			if (char_column_info & (1<<(6-j))) score_array[j] |= 1<<i;
+			else score_array[j] &= ~(1<<i);
+		}
+
+	}
+	for (unsigned char j=0; j<7; j++) score_array[j] &= ~(1<<5); //Space between number
+	for (unsigned char i=6; i<8; i++)
+	{
+		char_column_info = pgm_read_byte((char *)((int)font5x8 + (5 * ones) + (i-6))); //Read column in from font5x8.h
+		for (unsigned char j=0; j<7; j++)
+		{
+			if (char_column_info & (1<<(6-j))) score_array[j] |= 1<<i;
+			else score_array[j] &= ~(1<<i);
+		}
+	}
+	for (unsigned char i=0; i<3; i++)
+	{
+		char_column_info = pgm_read_byte((char *)((int)font5x8 + (5 * ones) + (i+2))); //Read column in from font5x8.h
+		for (unsigned char j=0; j<7; j++)
+		{
+			if (char_column_info & (1<<(6-j))) score_array[j+7] |= 1<<i;
+			else score_array[j+7] &= ~(1<<i);
+		}
+	}
+
+	GLCD_GoTo(110,6);
+	for (unsigned char i=0; i<7; i++) GLCD_WriteData(score_array[i]);
+	GLCD_GoTo(110,7);
+	for (unsigned char i=0; i<7; i++) GLCD_WriteData(score_array[i+7]);
 }
 
 /**********************************
@@ -768,9 +846,9 @@ void BOX_line_check(void)
     //TODO: Disable interrupts to pause game flow
     //TODO: Add an arbitrary delay, perhaps make complete lines flash?
 
-  --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
-
   score += temp_index; //Add the completed rows to our score
+
+  --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
 
   //Rewrite BOX_location[] data without completed lines
   unsigned char read_from_row = BOX_board_bottom;
