@@ -265,7 +265,8 @@ static const char PROGMEM BOX_reference[7][4][4] = {
 unsigned char BOX_location[array_size];
 unsigned char x_loc, y_loc;     //Bottom left index of each piece
 unsigned char cur_piece = 0;	//Index for BOX_reference
-unsigned char rotate = 0;	//Index for piece rotation
+unsigned char rotate = 0;		//Index for piece rotation
+unsigned char score;		//Track the number of rows completed
 
 //Messages
 static const char PROGMEM message1[] = { "Tetrapuzz!" };
@@ -320,6 +321,7 @@ void BOX_pregame(void)
 
 void BOX_start_game(void)
 {
+  score = 0; //Reset score
   //Populate BOX_location[] with 0
   for (unsigned char i=0; i<array_size; i++) { BOX_location[i] = 0x00; }
 
@@ -335,6 +337,11 @@ void BOX_end_game(void)
   cursor_y = 29;
   LCD_Write_String_P(message3,white,black);
   while(1) { }
+}
+
+void BOX_update_score(void)
+{
+	//Update the score on the display
 }
 
 /**********************************
@@ -611,8 +618,9 @@ void BOX_line_check(void)
     //TODO: Disable interrupts to pause game flow
     //TODO: Add an arbitrary delay, perhaps make complete lines flash?
 
-  //Rewrite BOX_location[] without completed rows.
   --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
+
+  score += temp_index; //Add the completed rows to our score
 
   //Rewrite BOX_location[] data without completed lines
   unsigned char read_from_row = BOX_board_bottom;
@@ -672,6 +680,7 @@ void BOX_line_check(void)
   }
 
   BOX_rewrite_display(blue, white);
+  BOX_update_score();
 }
 
 
