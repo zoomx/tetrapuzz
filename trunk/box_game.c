@@ -618,9 +618,9 @@ void BOX_line_check(void)
     //TODO: Disable interrupts to pause game flow
     //TODO: Add an arbitrary delay, perhaps make complete lines flash?
 
-  --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
-
   score += temp_index; //Add the completed rows to our score
+
+  --temp_index;	//This was incremented one too many times earlier, get it back to the proper index.
 
   //Rewrite BOX_location[] data without completed lines
   unsigned char read_from_row = BOX_board_bottom;
