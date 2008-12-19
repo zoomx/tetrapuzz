@@ -271,8 +271,9 @@ unsigned char rotate = 0;	//Index for piece rotation
 
 //Messages
 static const char PROGMEM message1[] = { "Tetrapuzz!" };
-static const char PROGMEM message2[] = { "click to start" };
-static const char PROGMEM message3[] = { "Game Over" };
+static const char PROGMEM message2[] = { "click to"} ;
+static const char PROGMEM message3[] = { "start" };
+static const char PROGMEM message4[] = { "Game Over" };
 
 //Functions
 
@@ -329,7 +330,11 @@ void GLCD_string_sideways(unsigned char X, unsigned char Y, const char * str,uns
 	  }
 	  //Now display the data we have just stored
 	  GLCD_GoTo(Y,X);
-	  ++X;
+	  if (++X > 7) //Take care of line wrapping
+	  {
+		  X = 0;
+		  Y -= 8;
+	  }
 	  for (unsigned char i=0; i<7; i++) GLCD_WriteData(temp_array[i]);
 	}
 }
@@ -386,16 +391,9 @@ void BOX_pregame(void)
   GLCD_ClearScreen();
 
   GLCD_GoTo(40,4);
-  GLCD_string_sideways(0,20,(char *)message1, (sizeof(message1) / sizeof(message1[0])));
-  //LCD_Fill_Screen(yellow);
-
-  //cursor_x = 18;
-  //cursor_y = 9;
-  //LCD_Write_String_P(message1,green,yellow);
-
-  //cursor_x = 6;
-  //cursor_y = 20;
-  //LCD_Write_String_P(message2,black,yellow);
+  GLCD_string_sideways(0,80,(char *)message1, (sizeof(message1) / sizeof(message1[0])));
+  GLCD_string_sideways(1,60, (char *)message2, (sizeof(message2) / sizeof(message2[0])));
+  GLCD_string_sideways(1,52, (char *)message3, (sizeof(message3) / sizeof(message3[0])));
 }
 
 void BOX_start_game(void)
@@ -483,9 +481,9 @@ void BOX_end_game(void)
 {
   TCCR1B &= ~(1<<CS12 | 1<<CS11 | 1<<CS10);	//stop timer
   BOX_rewrite_display(white,black);
-  //cursor_x = 24;
-  //cursor_y = 29;
-  //LCD_Write_String_P(message3,white,black);
+
+  GLCD_string_sideways(0,80, (char *)message4, (sizeof(message4) / sizeof(message4[0])));
+
   while(1) { }
 }
 
