@@ -16,6 +16,7 @@ void BOX_erase(unsigned char X, unsigned char Y);
 void BOX_pregame(void);
 void BOX_start_game(void);
 void BOX_end_game(void);
+void BOX_update_score(void);
 unsigned char BOX_loc_return_bit(unsigned char X, unsigned char Y);
 void BOX_loc_set_bit(unsigned char X, unsigned char Y);
 void BOX_loc_clear_bit(unsigned char X, unsigned char Y);
