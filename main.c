@@ -1,18 +1,18 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#include "3595_LCD.h"
+#include "KS0108.h"
 #include "box_game.h"
 
 //Debounce definitions
-#define KEY_DDR 	DDRD
-#define KEY_PIN 	PIND
-#define KEY_PORT 	PORTD
-#define BTN_UP		6
-#define BTN_DN		5
-#define BTN_LT		7
-#define BTN_RT		4
-#define BTN_ENTER	3
+#define KEY_DDR 	DDRB
+#define KEY_PIN 	PINB
+#define KEY_PORT 	PORTB
+#define BTN_UP		0
+#define BTN_DN		1
+#define BTN_LT		2
+#define BTN_RT		6
+#define BTN_ENTER	7
 #define KEY_MSK 	(1<<BTN_UP | 1<<BTN_DN | 1<<BTN_LT | 1<<BTN_RT | 1<<BTN_ENTER)
 
 /**Device Information**
@@ -78,7 +78,6 @@ int main(void)
   random_piece = 0;
   init_io();
   init_timers();
-  LCD_init();
 
   BOX_pregame();
 
