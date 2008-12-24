@@ -899,7 +899,8 @@ void BOX_line_check(void)
 		  }
 
 		  //A row has now been read from, decrement the counter
-		  --read_from_row;
+		  if (read_from_row) --read_from_row;
+		  else rows_left_to_read = 0;
 
 		  //A row has now been written to, increment the counter, decrement the tracker
 		  ++i;
